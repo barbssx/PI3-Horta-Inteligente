@@ -1,0 +1,26 @@
+name: Deploy para o GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout do código
+      uses: actions/checkout@v4
+
+    - name: 🛠️ Instalar dependências
+      run: npm install
+
+    - name: 🏗️ Build do projeto
+      run: npm run build
+
+    - name: 🚀 Deploy para o GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist

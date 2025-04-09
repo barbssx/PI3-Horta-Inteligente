@@ -7,6 +7,7 @@ module.exports = defineConfig({
     plugins: [
       new webpack.ProvidePlugin({
         process: 'process/browser',
+        publicPath: '/dashboard/'
       }),
     ],
     resolve: {
