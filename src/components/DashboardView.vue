@@ -1,6 +1,5 @@
 <template>
 	<div>
-		<h2>Gráfico de Temperatura</h2>
 		<line-chart :data="chartData" :options="chartOptions" />
 	</div>
 </template>
@@ -22,18 +21,51 @@ export default {
 			required: true,
 		},
 	},
+	data() {
+		return {
+			selectedMetrics: ["composteira", "ambiente", "umidade"],
+		};
+	},
 	computed: {
 		chartData() {
+			const datasets = [];
+
+			if (this.selectedMetrics.includes("composteira")) {
+				datasets.push({
+					label: "Temperatura da Composteira (°C)",
+					backgroundColor: "rgba(255, 99, 132, 0.2)",
+					borderColor: "rgba(255, 99, 132, 1)",
+					data: this.data.map((item) => item.temperaturaComposteira),
+					tension: 0.3,
+				});
+			}
+
+			if (this.selectedMetrics.includes("ambiente")) {
+				datasets.push({
+					label: "Temperatura Ambiente (°C)",
+					backgroundColor: "rgba(54, 162, 235, 0.2)",
+					borderColor: "rgba(54, 162, 235, 1)",
+					data: this.data.map((item) => item.temperaturaAmbiente),
+					tension: 0.3,
+				});
+			}
+
+			if (this.selectedMetrics.includes("umidade")) {
+				datasets.push({
+					label: "Umidade Ambiente (%)",
+					backgroundColor: "rgba(75, 192, 192, 0.2)",
+					borderColor: "rgba(75, 192, 192, 1)",
+					data: this.data.map((item) => item.umidadeAmbiente),
+					tension: 0.3,
+				});
+			}
+
 			return {
-				labels: this.data.map((item) => item.date.toLocaleString()),
-				datasets: [
-					{
-						label: "Temperatura (C)",
-						backgroundColor: "rgba(75,192,192,0.2)",
-						borderColor: "rgba(75,192,192,1)",
-						data: this.data.map((item) => item.temperature),
-					},
-				],
+				labels: this.data.map((item) => {
+					const date = new Date(item.data);
+					return !isNaN(date) ? date.toLocaleDateString() : "Data inválida";
+				}),
+				datasets,
 			};
 		},
 		chartOptions() {
@@ -56,16 +88,17 @@ export default {
 
 <style scoped>
 div {
-	width: 90%;
-	height: 480px;
+	width: 100%;
+	max-width: 1200px;
+	height: 680px;
 	margin: 100px auto;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+}
 
-	h2 {
-		text-align: center;
-	}
+h2 {
+	text-align: center;
 }
 </style>
