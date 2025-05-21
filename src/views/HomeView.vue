@@ -22,9 +22,14 @@
 			</ul>
 		</section>
 
-		<section class="access animate-fade-in">
-			<router-link to="/dashboard" class="btn-acessar">Acessar Dashboard</router-link>
-		</section>
+		<div class="btns">
+			<section class="access animate-fade-in">
+				<router-link to="/sobre" class="btn-acessar">Sobre</router-link>
+			</section>
+			<section class="access animate-fade-in">
+				<router-link to="/dashboard" class="btn-acessar">Acessar Dashboard</router-link>
+			</section>
+		</div>
 	</div>
 </template>
 
@@ -141,5 +146,11 @@ export default {
 
 .animate-slide-up {
 	animation: slide-up 1s ease-out;
+}
+
+.btns {
+	display: flex;
+	justify-content: center;
+	gap: 10px;
 }
 </style>
