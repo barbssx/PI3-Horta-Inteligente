@@ -14,11 +14,12 @@
 			</button>
 		</div>
 
-		<div class="bg-white p-6 rounded-xl shadow-lg text-gray-700 transition-all duration-300 border border-gray-200">
+		<div class="tabs-content-container bg-white p-6 rounded-xl shadow-lg text-gray-700 transition-all duration-300 border border-gray-200">
 			<div v-if="tabs[activeTab].template">
 				<component :is="tabs[activeTab].template"></component>
 			</div>
 			<div v-else v-html="tabs[activeTab].content"></div>
+
 			<div v-if="tabs[activeTab].image" class="mt-6">
 				<img :src="tabs[activeTab].image" alt="Esquema de sensores" class="rounded-lg shadow-md w-full max-h-96 object-contain" />
 			</div>
@@ -46,18 +47,17 @@ export default {
 				{
 					title: "Componentes",
 					content: `
-						<ul style="list-style: none">
-							<li>✅ <span class="font-medium">Arduino Nano</span></li>
-							<li>✅ <span class="font-medium">Sensor de temperatura e umidade modelo DHT11</span></li>
-							<li>✅ <span class="font-medium">Sensor de temperatura DS18B20</span></li>
-							<li>✅ <span class="font-medium">Sensor de Umidade AM2320</span></li>
-							<li>✅ <span class="font-medium">Módulo transceptor de dados NRF24L01</span></li>
-							<li>✅ <span class="font-medium">Módulo RTC DS3231</span></li>
-							<li>✅ <span class="font-medium">Cartão SD</span></li>
-						</ul>
-					`,
+            <ul style="list-style: none">
+              <li>✅ <span class="font-medium">Arduino Nano</span></li>
+              <li>✅ <span class="font-medium">Sensor de temperatura e umidade modelo DHT11</span></li>
+              <li>✅ <span class="font-medium">Sensor de temperatura DS18B20</span></li>
+              <li>✅ <span class="font-medium">Sensor de Umidade AM2320</span></li>
+              <li>✅ <span class="font-medium">Módulo transceptor de dados NRF24L01</span></li>
+              <li>✅ <span class="font-medium">Módulo RTC DS3231</span></li>
+              <li>✅ <span class="font-medium">Cartão SD</span></li>
+            </ul>
+          `,
 				},
-
 				{
 					title: "Coleta de Dados",
 					content: `
@@ -75,7 +75,6 @@ export default {
           `,
 					image: require("@/assets/Imagem2.png"),
 				},
-
 				{
 					title: "Galeria",
 					template: "GaleriaView",
@@ -90,6 +89,7 @@ export default {
 .animate-fade-in {
 	animation: fadeIn 0.6s ease-in-out;
 }
+
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -107,6 +107,7 @@ export default {
 	border-bottom: 2px solid #e5e7eb;
 	margin-bottom: 1.5rem;
 }
+
 .tab-btn {
 	background: none;
 	border: none;
@@ -119,12 +120,15 @@ export default {
 	position: relative;
 	transition: color 0.2s;
 }
+
 .tab-btn:not(:last-child) {
 	margin-right: 0.5rem;
 }
+
 .tab-btn.active {
 	color: #047857;
 }
+
 .tab-btn.active::after {
 	content: "";
 	position: absolute;
@@ -135,6 +139,7 @@ export default {
 	background: linear-gradient(90deg, #34d399, #047857);
 	border-radius: 2px 2px 0 0;
 }
+
 .tab-btn:hover {
 	color: #059669;
 }
@@ -152,7 +157,19 @@ export default {
 	margin-bottom: 20px;
 	transition: color 0.2s;
 }
+
 .btn-voltar:hover {
 	color: #1b5e20;
+}
+
+.tabs-content-container {
+	max-width: 720px;
+	margin: 20px auto;
+	padding: 1.5rem 1rem;
+	border-radius: 1rem;
+	box-shadow: 0 10px 15px rgb(0 0 0 / 0.1);
+	border: 1px solid #e5e7eb;
+	background: #fff;
+	transition: all 0.3s ease;
 }
 </style>

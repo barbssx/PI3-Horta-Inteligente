@@ -29,6 +29,9 @@
 			<section class="access animate-fade-in">
 				<router-link to="/dashboard" class="btn-acessar">Acessar Dashboard</router-link>
 			</section>
+			<section class="access animate-fade-in">
+				<router-link to="/conhecimento" class="btn-acessar">Conhecimento</router-link>
+			</section>
 		</div>
 	</div>
 </template>
