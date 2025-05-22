@@ -50,7 +50,7 @@ export function parseXlsxFile(content) {
 
   console.log("Dados do XLSX:", jsonData);
 
-  return jsonData.slice(1).map((row) => {
+  return jsonData.slice(2).map((row) => {
     const [
       tempComposteira,
       tempAmbiente,
