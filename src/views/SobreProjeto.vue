@@ -30,10 +30,11 @@
 <script>
 import VisualizacaoTab from "@/comp_auxiliares/VisualizacaoTab.vue";
 import GaleriaView from "@/comp_auxiliares/GaleriaView.vue";
+import UploadPage from "@/comp_auxiliares/UploadPage.vue";
 
 export default {
 	name: "SobreProjeto",
-	components: { VisualizacaoTab, GaleriaView },
+	components: { VisualizacaoTab, GaleriaView, UploadPage},
 	data() {
 		return {
 			activeTab: 0,
@@ -96,6 +97,10 @@ export default {
 					title: "Galeria",
 					template: "GaleriaView",
 				},
+				{
+					title: "Upload",
+					template: "UploadPage"
+				}
 			],
 		};
 	},
