@@ -47,7 +47,7 @@ export default {
 				{
 					title: "Componentes",
 					content: `
-            <ul style="list-style: none">
+            <ul class="custom-list">
               <li>✅ <span class="font-medium">Arduino Nano</span></li>
               <li>✅ <span class="font-medium">Sensor de temperatura e umidade modelo DHT11</span></li>
               <li>✅ <span class="font-medium">Sensor de temperatura DS18B20</span></li>
@@ -61,8 +61,25 @@ export default {
 				{
 					title: "Coleta de Dados",
 					content: `
-            <p>Os dados são coletados a cada 15 minutos e salvos no cartão SD em formato CSV, com data, hora, temperatura e umidade.</p>
-          `,
+						<p>O monitoramento da composteira é realizado por meio de um sistema baseado em Arduino Nano, equipado com sensores ambientais e um módulo de relógio em tempo real (RTC), garantindo precisão e confiabilidade na coleta.</p>
+
+						<p>Os dados são coletados automaticamente a cada 15 minutos e registrados no cartão SD no formato CSV, contendo:</p>
+						<ul class="custom-list arduino-list">
+							<li>Temperatura interna da composteira (°C), medida pelo sensor DS18B20</li>
+							<li>Temperatura ambiente (°C) e umidade relativa (%), obtidas pelo sensor AM2320</li>
+							<li>Tensão da bateria que alimenta o sistema (V)</li>
+							<li>Data e hora exatas (ano, mês, dia, hora, minuto e segundo) via módulo RTC DS3231</li>
+						</ul>
+
+						<p>O arquivo CSV permite fácil exportação e análise dos dados em softwares de planilha como Excel, facilitando o acompanhamento do ambiente da composteira ao longo do tempo.</p>
+
+						<p>O sistema possui ainda recursos de segurança para evitar perda de dados, incluindo:</p>
+						<ul class="custom-list arduino-list">
+							<li>Verificação e sinalização de erros no cartão SD, sensores e relógio</li>
+							<li>Modo de baixo consumo energético (sleep mode) ativado entre as coletas</li>
+							<li>Controles manuais para apagar registros e ativar exibição das leituras em tempo real via monitor serial</li>
+						</ul>
+					`,
 				},
 				{
 					title: "Visualização",
@@ -85,7 +102,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .animate-fade-in {
 	animation: fadeIn 0.6s ease-in-out;
 }
@@ -171,5 +188,25 @@ export default {
 	border: 1px solid #e5e7eb;
 	background: #fff;
 	transition: all 0.3s ease;
+}
+.custom-list {
+	list-style: none;
+	padding-left: 0;
+	margin-left: 0;
+}
+
+.custom-list li {
+	position: relative;
+	padding-left: 1.5em;
+	margin-bottom: 0.25rem;
+}
+
+.custom-list.arduino-list li::before {
+	content: "🔌";
+	position: absolute;
+	left: 0;
+	top: 0;
+	font-size: 1.1em;
+	line-height: 1;
 }
 </style>

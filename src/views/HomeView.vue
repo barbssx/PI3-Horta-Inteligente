@@ -1,7 +1,7 @@
 <template>
 	<div class="home-container">
 		<section class="hero animate-fade-in">
-			<h1 class="title">Projeto Horta Escolar Inteligente</h1>
+			<h1 class="title">Horta Inteligente</h1>
 			<p class="subtitle">Integrando tecnologia ao ambiente escolar com sensores de temperatura e umidade na composteira.</p>
 		</section>
 
