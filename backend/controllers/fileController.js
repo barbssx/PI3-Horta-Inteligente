@@ -11,8 +11,15 @@ exports.uploadFile = async (req, res) => {
 
     const file = req.file;
     const uploadPath = file.path;
-
     let registros = [];
+
+    const parseNumber = (value) => {
+      if (typeof value === 'string') {
+        value = value.replace(',', '.').trim();
+      }
+      const num = parseFloat(value);
+      return isNaN(num) ? null : num;
+    };
 
     const parseRow = (row) => {
       const data_hora = moment({
@@ -22,14 +29,14 @@ exports.uploadFile = async (req, res) => {
         hour: parseInt(row.Hora),
         minute: parseInt(row.Min),
         second: parseInt(row.Seg),
-      }).toDate();
+      });
 
       return {
-        t_com: parseFloat(row.T_Comp),
-        t_amb: parseFloat(row.T_Amb),
-        u_amb: parseFloat(row.U_Amb),
-        tensao: parseFloat(row['Tensão']),
-        data_hora
+        t_com: parseNumber(row.T_Comp),
+        t_amb: parseNumber(row.T_Amb),
+        u_amb: parseNumber(row.U_Amb),
+        tensao: parseNumber(row['Tensão']),
+        data_hora: data_hora.isValid() ? data_hora.toDate() : null
       };
     };
 
@@ -47,7 +54,6 @@ exports.uploadFile = async (req, res) => {
       const workbook = xlsx.readFile(uploadPath);
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = xlsx.utils.sheet_to_json(sheet);
-
       registros = rows.map(row => parseRow(row));
       await Registro.bulkCreate(registros);
       res.send({ message: 'Dados XLSX inseridos com sucesso.' });
