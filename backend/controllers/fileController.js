@@ -1,3 +1,10 @@
+const fs = require('fs');
+const path = require('path');
+const csv = require('csv-parser');
+const xlsx = require('xlsx');
+const moment = require('moment');
+const Registro = require('../models/Registro');
+
 exports.uploadFile = async (req, res) => {
   try {
     if (!req.file) return res.status(400).send('Nenhum arquivo enviado.');
