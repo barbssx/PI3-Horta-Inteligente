@@ -36,7 +36,8 @@ exports.uploadFile = async (req, res) => {
         t_amb: parseNumber(row.T_Amb),
         u_amb: parseNumber(row.U_Amb),
         tensao: parseNumber(row['Tensão']),
-        data_hora: data_hora.isValid() ? data_hora.toDate() : null
+        data: data_hora.isValid() ? data_hora.format('YYYY-MM-DD') : null, 
+        hora: data_hora.isValid() ? data_hora.format('HH:mm:ss') : null
       };
     };
 
@@ -46,7 +47,7 @@ exports.uploadFile = async (req, res) => {
         .on('data', (row) => {
           console.log('Linha lida:', row); 
           const registro = parseRow(row);
-          if (registro.data_hora) {
+          if (registro.data && registro.hora) {
             registros.push(registro);
           } else {
             console.warn('Data e hora inválidas para a linha:', row);
@@ -64,7 +65,8 @@ exports.uploadFile = async (req, res) => {
       const workbook = xlsx.readFile(uploadPath);
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = xlsx.utils.sheet_to_json(sheet);
-      registros = rows.map(row => parseRow(row)).filter(registro => registro.data_hora);
+      
+      registros = rows.slice(2).map(row => parseRow(row)).filter(registro => registro.data && registro.hora);
 
       if (registros.length > 0) {
         await Registro.bulkCreate(registros);

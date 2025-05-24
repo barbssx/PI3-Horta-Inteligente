@@ -1,11 +1,5 @@
 <template>
 	<div>
-		<button class="btn-voltar" @click="$router.back()">
-			<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24">
-				<path d="M15 18l-6-6 6-6" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-			</svg>
-			<span>Voltar</span>
-		</button>
 		<h1 class="dashboard-title">Dashboard da Horta Inteligente 🌱</h1>
 		<h2 class="text-xl font-semibold mb-2">📄 Insira o arquivo gerado pelo Arduino</h2>
 		<div class="mb-6 p-4 bg-blue-50 border border-blue-300 rounded-md text-blue-700 text-center max-w-xl mx-auto">

@@ -1,18 +1,20 @@
 <template>
-	<div class="max-w-md mx-auto p-4 border rounded-lg shadow bg-green-50">
-		<h2 class="text-xl font-bold mb-4 text-green-800">Importar Arquivo de Dados</h2>
+	<div class="row">
+		<div class="max-w-md mx-auto p-4 border rounded-lg shadow bg-green-50">
+			<h2 class="text-xl font-bold mb-4 text-green-800">Importar Arquivo de Dados</h2>
 
-		<input ref="fileInput" type="file" @change="handleFileChange" class="mb-4" />
+			<input ref="fileInput" type="file" @change="handleFileChange" class="mb-4" />
 
-		<button
-			@click="enviarArquivo"
-			:disabled="!file"
-			class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-		>
-			Enviar para o banco de dados
-		</button>
+			<button
+				@click="enviarArquivo"
+				:disabled="!file"
+				class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+			>
+				Enviar para o banco de dados
+			</button>
 
-		<p v-if="mensagem" class="mt-4 text-sm text-green-700">{{ mensagem }}</p>
+			<p v-if="mensagem" class="mt-4 text-sm text-green-700">{{ mensagem }}</p>
+		</div>
 	</div>
 </template>
 

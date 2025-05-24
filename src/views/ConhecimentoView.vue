@@ -263,7 +263,7 @@ export default {
 }
 
 .tabs-content-container {
-	max-width: 720px;
+	max-width: 800px;
 	margin: 20px auto;
 	padding: 1.5rem 1rem;
 	border-radius: 1rem;

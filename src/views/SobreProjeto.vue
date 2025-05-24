@@ -34,7 +34,7 @@ import UploadPage from "@/comp_auxiliares/UploadPage.vue";
 
 export default {
 	name: "SobreProjeto",
-	components: { VisualizacaoTab, GaleriaView, UploadPage},
+	components: { VisualizacaoTab, GaleriaView, UploadPage },
 	data() {
 		return {
 			activeTab: 0,
@@ -97,10 +97,6 @@ export default {
 					title: "Galeria",
 					template: "GaleriaView",
 				},
-				{
-					title: "Upload",
-					template: "UploadPage"
-				}
 			],
 		};
 	},
@@ -185,7 +181,7 @@ export default {
 }
 
 .tabs-content-container {
-	max-width: 720px;
+	max-width: 800px;
 	margin: 20px auto;
 	padding: 1.5rem 1rem;
 	border-radius: 1rem;

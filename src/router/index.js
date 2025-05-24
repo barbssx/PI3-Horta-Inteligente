@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
-import DashboardPage from '@/views/DashboardPage.vue'
+import DashboardPrincipal from '@/components/DashboardPrincipal.vue'
 import SobreProjeto from '@/views/SobreProjeto.vue'
 import ConhecimentoView from '@/views/ConhecimentoView.vue'
 
@@ -11,7 +11,7 @@ const routes = [
     component: HomeView
   }
   ,
-  { path: '/dashboard', name: 'DashboardPage', component: DashboardPage },
+  { path: '/dashboard', name: 'DashboardPrincipal', component: DashboardPrincipal},
   {path: '/sobre', name: 'SobreProjeto', component: SobreProjeto},
   {path: '/conhecimento', name: 'ConhecimentoView', component: ConhecimentoView},
 ]
