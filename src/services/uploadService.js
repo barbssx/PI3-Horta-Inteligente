@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000'; // ajuste se for Vercel/Render etc.
+const API_URL = 'https://dashboard-production-4d11e.up.railway.app/api';
 
 export const uploadArquivo = async (formData) => {
   return await axios.post(`${API_URL}/upload`, formData, {
@@ -11,7 +11,6 @@ export const uploadArquivo = async (formData) => {
 };
 
 export const getRegistros = async () => {
-  const response = await axios.get(`${API_URL}/api/registros`); 
+  const response = await axios.get(`${API_URL}/registros`);
   return response.data;
 };
-
