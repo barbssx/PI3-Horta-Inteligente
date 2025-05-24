@@ -18,7 +18,7 @@ const CompostagemDado = sequelize.define('CompostagemDado', {
     type: DataTypes.FLOAT,
     allowNull: false,
   },
-  data_hora: {
+  data: {
     type: DataTypes.DATE,
     allowNull: false,
   },

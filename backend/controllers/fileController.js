@@ -22,22 +22,25 @@ exports.uploadFile = async (req, res) => {
     };
 
     const parseRow = (row) => {
-      const data_hora = moment({
+      const data = moment({
         year: parseInt(row.Ano),
         month: parseInt(row['Mês']) - 1,
         day: parseInt(row.Dia),
+      }).format('YYYY-MM-DD'); 
+
+      const hora = moment({
         hour: parseInt(row.Hora),
         minute: parseInt(row.Min),
         second: parseInt(row.Seg),
-      });
+      }).format('HH:mm:ss');
 
       return {
         t_com: parseNumber(row.T_Comp),
         t_amb: parseNumber(row.T_Amb),
         u_amb: parseNumber(row.U_Amb),
         tensao: parseNumber(row['Tensão']),
-        data: data_hora.isValid() ? data_hora.format('YYYY-MM-DD') : null, 
-        hora: data_hora.isValid() ? data_hora.format('HH:mm:ss') : null 
+        data,
+        hora, 
       };
     };
 
@@ -50,7 +53,7 @@ exports.uploadFile = async (req, res) => {
           if (registro.data && registro.hora) {
             registros.push(registro);
           } else {
-            console.warn('Data e hora inválidas para a linha:', row);
+            console.warn('Data ou hora inválidas para a linha:', row);
           }
         })
         .on('end', async () => {
