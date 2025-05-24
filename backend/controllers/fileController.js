@@ -1,10 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-const csv = require('csv-parser');
-const xlsx = require('xlsx');
-const moment = require('moment');
-const Registro = require('../models/Registro');
-
 exports.uploadFile = async (req, res) => {
   try {
     if (!req.file) return res.status(400).send('Nenhum arquivo enviado.');
@@ -44,24 +37,38 @@ exports.uploadFile = async (req, res) => {
       fs.createReadStream(uploadPath)
         .pipe(csv())
         .on('data', (row) => {
-          registros.push(parseRow(row));
+          const registro = parseRow(row);
+          if (registro.data_hora) {
+            registros.push(registro);
+          } else {
+            console.warn('Data e hora inválidas para a linha:', row);
+          }
         })
         .on('end', async () => {
-          await Registro.bulkCreate(registros);
-          res.send({ message: 'Dados CSV inseridos com sucesso.' });
+          if (registros.length > 0) {
+            await Registro.bulkCreate(registros);
+            res.send({ message: 'Dados CSV inseridos com sucesso.' });
+          } else {
+            res.status(400).send('Nenhum registro válido encontrado.');
+          }
         });
     } else if (file.originalname.endsWith('.xlsx')) {
       const workbook = xlsx.readFile(uploadPath);
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = xlsx.utils.sheet_to_json(sheet);
-      registros = rows.map(row => parseRow(row));
-      await Registro.bulkCreate(registros);
-      res.send({ message: 'Dados XLSX inseridos com sucesso.' });
+      registros = rows.map(row => parseRow(row)).filter(registro => registro.data_hora);
+
+      if (registros.length > 0) {
+        await Registro.bulkCreate(registros);
+        res.send({ message: 'Dados XLSX inseridos com sucesso.' });
+      } else {
+        res.status(400).send('Nenhum registro válido encontrado.');
+      }
     } else {
       res.status(400).send('Formato de arquivo não suportado.');
     }
   } catch (err) {
-    console.error(err);
+    console.error('Erro ao processar o arquivo:', err);
     res.status(500).send('Erro ao processar o arquivo.');
   }
 };
