@@ -36,18 +36,18 @@ exports.uploadFile = async (req, res) => {
         t_amb: parseNumber(row.T_Amb),
         u_amb: parseNumber(row.U_Amb),
         tensao: parseNumber(row['Tensão']),
-        data_hora: data_hora.isValid() ? data_hora.toDate() : null,
-        hora: data_hora.isValid() ? data_hora.format('HH:mm:ss') : null,
+        data: data_hora.isValid() ? data_hora.format('YYYY-MM-DD') : null, 
+        hora: data_hora.isValid() ? data_hora.format('HH:mm:ss') : null 
       };
     };
 
     if (file.originalname.endsWith('.csv')) {
       fs.createReadStream(uploadPath)
-        .pipe(csv({ separator: '\t', skipLines: 1 })) 
+        .pipe(csv({ separator: '\t' })) 
         .on('data', (row) => {
-          console.log('Linha lida:', row);
+          console.log('Linha lida:', row); 
           const registro = parseRow(row);
-          if (registro.data_hora && registro.Hora) {
+          if (registro.data && registro.hora) {
             registros.push(registro);
           } else {
             console.warn('Data e hora inválidas para a linha:', row);
@@ -65,8 +65,7 @@ exports.uploadFile = async (req, res) => {
       const workbook = xlsx.readFile(uploadPath);
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = xlsx.utils.sheet_to_json(sheet);
-
-      registros = rows.slice(2).map(row => parseRow(row)).filter(registro => registro.data_hora && registro.Hora);
+      registros = rows.map(row => parseRow(row)).filter(registro => registro.data && registro.hora);
 
       if (registros.length > 0) {
         await Registro.bulkCreate(registros);
