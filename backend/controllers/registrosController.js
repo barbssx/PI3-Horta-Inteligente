@@ -1,5 +1,5 @@
 const { Op, fn, col, where } = require("sequelize");
-const CompostagemDado = require("../models/CompostagemDado");
+const CompostagemDado = require("../models/Registro.js");
 
 exports.getAll = async (req, res) => {
   try {

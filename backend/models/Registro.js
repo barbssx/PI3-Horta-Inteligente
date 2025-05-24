@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const CompostagemDado = sequelize.define('CompostagemDado', {
+const Registro = sequelize.define('Registro', {
   t_com: {
     type: DataTypes.FLOAT,
     allowNull: false,
@@ -31,4 +31,4 @@ const CompostagemDado = sequelize.define('CompostagemDado', {
   timestamps: false, 
 });
 
-module.exports = CompostagemDado;
+module.exports = Registro;
