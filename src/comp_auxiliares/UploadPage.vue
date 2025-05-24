@@ -6,11 +6,11 @@
 			<label for="filter" class="block text-lg font-bold text-green-900 mb-2">Filtrar por Data:</label>
 			<div class="d-flex">
 				<input type="date" id="filter" v-model="filter" class="form-control me-2" placeholder="Selecione uma data" />
-				<button @click="filtrarRegistros" class="btn btn-success">Filtrar</button>
+				<button :disabled="!filter" @click="filtrarRegistros" class="btn btn-success">Filtrar</button>
 			</div>
 		</div>
 
-		<table class="table table-bordered table-hover mt-5">
+		<table class="table table-bordered table-hover mt-5" v-if="registros.length">
 			<thead class="table-success text-dark">
 				<tr>
 					<th>Temp. Composteira (°C)</th>
@@ -22,7 +22,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr v-for="(reg, index) in registrosFiltrados" :key="index">
+				<tr v-for="(reg, index) in registros" :key="index">
 					<td>{{ reg.t_com }}</td>
 					<td>{{ reg.t_amb }}</td>
 					<td>{{ reg.u_amb }}</td>
@@ -47,27 +47,30 @@ export default {
 			filter: "",
 		};
 	},
-	methods: {
-		async atualizarRegistros(dataISO) {
-			const todos = await getRegistros();
-			this.registros = todos.filter((reg) => reg.data === dataISO);
+	watch: {
+		filter(novaData) {
+			if (!novaData) this.registros = [];
 		},
+	},
+	methods: {
 		async filtrarRegistros() {
 			if (!this.filter) {
 				alert("Por favor, selecione uma data.");
 				return;
 			}
-			await this.atualizarRegistros(this.filter);
+
+			try {
+				const registros = await getRegistros(this.filter);
+				this.registros = registros;
+			} catch (err) {
+				console.error("Erro ao buscar registros:", err);
+				alert("Erro ao buscar registros.");
+			}
 		},
 		formatarData(dataISO) {
 			if (!dataISO) return "";
-			const [ano, mes, dia] = dataISO.split("-");
+			const [ano, mes, dia] = dataISO.split("T")[0].split("-");
 			return `${dia}/${mes}/${ano}`;
-		},
-	},
-	computed: {
-		registrosFiltrados() {
-			return this.registros;
 		},
 	},
 };

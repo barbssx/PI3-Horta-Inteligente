@@ -1,7 +1,6 @@
 <template>
 	<div>
-		<h1 class="dashboard-title">Dashboard da Horta Inteligente 🌱</h1>
-		<h2 class="text-xl font-semibold mb-2">📄 Insira o arquivo gerado pelo Arduino</h2>
+		<h3 class="text-xl font-semibold mb-2">📄 Insira o arquivo gerado pelo Arduino</h3>
 		<div class="mb-6 p-4 bg-blue-50 border border-blue-300 rounded-md text-blue-700 text-center max-w-xl mx-auto">
 			<p class="paragraph">
 				Para visualizar os dados no dashboard, envie o arquivo CSV ou XLSX gerado pelo Arduino. Ele deve conter as informações de temperatura e umidade

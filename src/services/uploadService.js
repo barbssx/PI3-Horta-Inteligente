@@ -10,7 +10,9 @@ export const uploadArquivo = async (formData) => {
   });
 };
 
-export const getRegistros = async () => {
-  const response = await axios.get(`${API_URL}/registros`);
+export const getRegistros = async (data) => {
+  const response = await axios.get(`${API_URL}/registros`, {
+    params: { data },
+  });
   return response.data;
 };

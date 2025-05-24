@@ -1,7 +1,7 @@
 <template>
 	<div class="container">
 		<div class="upload-container">
-			<h2>Enviar arquivo de dados</h2>
+			<h3>Enviar arquivo de dados</h3>
 			<input type="file" @change="handleFile" accept=".csv, .xlsx" ref="fileInput" />
 			<p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 		</div>
@@ -28,12 +28,12 @@ export default {
 			this.$refs.fileInput.value = null;
 			this.fileSelected = false;
 			this.errorMessage = "";
-			this.$emit("clear-input"); 
+			this.$emit("clear-input");
 		},
 		handleFile(event) {
 			const file = event.target.files[0];
 			if (file) {
-				this.errorMessage = ""; 
+				this.errorMessage = "";
 				const reader = new FileReader();
 
 				if (file.name.endsWith(".csv")) {
@@ -42,7 +42,7 @@ export default {
 							const content = e.target.result;
 							const parsedData = parseCsvFile(content);
 							this.$emit("file-read", parsedData);
-							this.fileSelected = true; 
+							this.fileSelected = true;
 						} catch (error) {
 							this.errorMessage = "Erro ao processar o arquivo CSV.";
 						}
@@ -53,7 +53,7 @@ export default {
 						try {
 							const content = e.target.result;
 							const parsedData = parseXlsxFile(content);
-							this.$emit("file-read", parsedData); 
+							this.$emit("file-read", parsedData);
 							this.fileSelected = true;
 						} catch (error) {
 							this.errorMessage = "Erro ao processar o arquivo XLSX.";
@@ -71,17 +71,16 @@ export default {
 
 <style scoped>
 .upload-container {
-	padding: 20px;
+	padding: 15px;
 	text-align: center;
 }
 
 input[type="file"] {
-	margin-top: 10px;
+	margin-top: 5px;
 }
 
 .container {
 	width: 90%;
-	margin: 50px auto;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;

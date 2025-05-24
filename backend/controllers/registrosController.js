@@ -1,22 +1,15 @@
-const { Op } = require("sequelize");
-const Registro = require("../models/Registro");
+const { Op, fn, col, where } = require("sequelize");
+const CompostagemDado = require("../models/CompostagemDado");
 
 exports.getAll = async (req, res) => {
   try {
     const { data } = req.query;
 
-    if (!data) {
-      return res.json([]);
-    }
+    if (!data) return res.json([]);
 
-    const inicio = `${data} 00:00:00`;
-    const fim = `${data} 23:59:59`;
-
-    const registros = await Registro.findAll({
+    const registros = await CompostagemDado.findAll({
       where: {
-        data: {
-          [Op.between]: [inicio, fim],
-        },
+        data: data,
       },
       order: [["id", "DESC"]],
     });
