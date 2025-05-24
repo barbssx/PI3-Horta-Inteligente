@@ -7,18 +7,17 @@ const Registro = require('../models/Registro');
 
 exports.uploadFile = async (req, res) => {
   try {
-    if (!req.files || !req.files.file) return res.status(400).send('Nenhum arquivo enviado.');
+    if (!req.file) return res.status(400).send('Nenhum arquivo enviado.');
 
-    const file = req.files.file;
-    const uploadPath = path.join(__dirname, '../uploads', file.name);
-    await file.mv(uploadPath);
+    const file = req.file;
+    const uploadPath = file.path;
 
     let registros = [];
 
     const parseRow = (row) => {
       const data_hora = moment({
         year: parseInt(row.Ano),
-        month: parseInt(row['Mês']) - 1, 
+        month: parseInt(row['Mês']) - 1,
         day: parseInt(row.Dia),
         hour: parseInt(row.Hora),
         minute: parseInt(row.Min),
@@ -34,7 +33,7 @@ exports.uploadFile = async (req, res) => {
       };
     };
 
-    if (file.name.endsWith('.csv')) {
+    if (file.originalname.endsWith('.csv')) {
       fs.createReadStream(uploadPath)
         .pipe(csv())
         .on('data', (row) => {
@@ -42,16 +41,16 @@ exports.uploadFile = async (req, res) => {
         })
         .on('end', async () => {
           await Registro.bulkCreate(registros);
-          res.send('Dados inseridos com sucesso.');
+          res.send({ message: 'Dados CSV inseridos com sucesso.' });
         });
-    } else if (file.name.endsWith('.xlsx')) {
+    } else if (file.originalname.endsWith('.xlsx')) {
       const workbook = xlsx.readFile(uploadPath);
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = xlsx.utils.sheet_to_json(sheet);
 
       registros = rows.map(row => parseRow(row));
       await Registro.bulkCreate(registros);
-      res.send('Dados inseridos com sucesso.');
+      res.send({ message: 'Dados XLSX inseridos com sucesso.' });
     } else {
       res.status(400).send('Formato de arquivo não suportado.');
     }
