@@ -15,11 +15,11 @@
 			</thead>
 			<tbody>
 				<tr v-for="(reg, index) in registros" :key="index" class="border-t border-gray-200 hover:bg-green-50 transition-colors">
-					<td class="px-4 py-2">{{ reg.t_comp }}</td>
+					<td class="px-4 py-2">{{ reg.t_com }}</td>
 					<td class="px-4 py-2">{{ reg.t_amb }}</td>
 					<td class="px-4 py-2">{{ reg.u_amb }}</td>
 					<td class="px-4 py-2">{{ reg.tensao }}</td>
-					<td class="px-4 py-2">{{ reg.dataHora }}</td>
+					<td class="px-4 py-2">{{ reg.data_hora }}</td>
 				</tr>
 			</tbody>
 		</table>
@@ -43,6 +43,7 @@ export default {
 	methods: {
 		async atualizarRegistros() {
 			this.registros = await getRegistros();
+			console.log(this.registros);
 		},
 	},
 };
