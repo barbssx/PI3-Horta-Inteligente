@@ -42,8 +42,9 @@ exports.uploadFile = async (req, res) => {
 
     if (file.originalname.endsWith('.csv')) {
       fs.createReadStream(uploadPath)
-        .pipe(csv())
+        .pipe(csv({ separator: '\t' })) 
         .on('data', (row) => {
+          console.log('Linha lida:', row); 
           const registro = parseRow(row);
           if (registro.data_hora) {
             registros.push(registro);
