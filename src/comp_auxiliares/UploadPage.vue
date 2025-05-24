@@ -10,7 +10,8 @@
 					<th class="px-6 py-3 text-sm font-semibold">Temperatura Ambiente (°C)</th>
 					<th class="px-6 py-3 text-sm font-semibold">Umidade Ambiente (%)</th>
 					<th class="px-6 py-3 text-sm font-semibold">Tensão (V)</th>
-					<th class="px-6 py-3 text-sm font-semibold">Data e Hora</th>
+					<th class="px-6 py-3 text-sm font-semibold">Data</th>
+					<th class="px-6 py-3 text-sm font-semibold">Hora</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -20,6 +21,7 @@
 					<td class="px-6 py-4">{{ reg.u_amb }}</td>
 					<td class="px-6 py-4">{{ reg.tensao }}</td>
 					<td class="px-6 py-4">{{ reg.data_hora }}</td>
+					<td class="px-6 py-4">{{ reg.Hora }}</td>
 				</tr>
 			</tbody>
 		</table>

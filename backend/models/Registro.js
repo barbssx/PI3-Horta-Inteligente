@@ -22,6 +22,10 @@ const CompostagemDado = sequelize.define('CompostagemDado', {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  Hora: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
 }, {
   tableName: 'compostagem_dados',
   timestamps: false, 
