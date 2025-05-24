@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
 const xlsx = require('xlsx');
+const moment = require('moment');
 const Registro = require('../models/Registro');
 
 exports.uploadFile = async (req, res) => {
@@ -14,21 +15,31 @@ exports.uploadFile = async (req, res) => {
 
     let registros = [];
 
+    const parseRow = (row) => {
+      const data_hora = moment({
+        year: parseInt(row.Ano),
+        month: parseInt(row['Mês']) - 1, 
+        day: parseInt(row.Dia),
+        hour: parseInt(row.Hora),
+        minute: parseInt(row.Min),
+        second: parseInt(row.Seg),
+      }).toDate();
+
+      return {
+        t_com: parseFloat(row.T_Comp),
+        t_amb: parseFloat(row.T_Amb),
+        u_amb: parseFloat(row.U_Amb),
+        tensao: parseFloat(row['Tensão']),
+        data_hora
+      };
+    };
+
     if (file.name.endsWith('.csv')) {
       fs.createReadStream(uploadPath)
         .pipe(csv())
-        .on('data', row => registros.push({
-          T_Comp: parseFloat(row.T_Comp),
-          T_Amb: parseFloat(row.T_Amb),
-          U_Amb: parseFloat(row.U_Amb),
-          Tensao: parseFloat(row['Tensão']),
-          Ano: parseInt(row.Ano),
-          Mes: parseInt(row['Mês']),
-          Dia: parseInt(row.Dia),
-          Hora: parseInt(row.Hora),
-          Min: parseInt(row.Min),
-          Seg: parseInt(row.Seg)
-        }))
+        .on('data', (row) => {
+          registros.push(parseRow(row));
+        })
         .on('end', async () => {
           await Registro.bulkCreate(registros);
           res.send('Dados inseridos com sucesso.');
@@ -37,18 +48,8 @@ exports.uploadFile = async (req, res) => {
       const workbook = xlsx.readFile(uploadPath);
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = xlsx.utils.sheet_to_json(sheet);
-      registros = rows.map(row => ({
-        T_Comp: parseFloat(row.T_Comp),
-        T_Amb: parseFloat(row.T_Amb),
-        U_Amb: parseFloat(row.U_Amb),
-        Tensao: parseFloat(row['Tensão']),
-        Ano: parseInt(row.Ano),
-        Mes: parseInt(row['Mês']),
-        Dia: parseInt(row.Dia),
-        Hora: parseInt(row.Hora),
-        Min: parseInt(row.Min),
-        Seg: parseInt(row.Seg)
-      }));
+
+      registros = rows.map(row => parseRow(row));
       await Registro.bulkCreate(registros);
       res.send('Dados inseridos com sucesso.');
     } else {

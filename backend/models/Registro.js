@@ -1,17 +1,30 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Registro = sequelize.define('Registro', {
-  T_Comp: DataTypes.FLOAT,
-  T_Amb: DataTypes.FLOAT,
-  U_Amb: DataTypes.FLOAT,
-  Tensao: DataTypes.FLOAT,
-  Ano: DataTypes.INTEGER,
-  Mes: DataTypes.INTEGER,
-  Dia: DataTypes.INTEGER,
-  Hora: DataTypes.INTEGER,
-  Min: DataTypes.INTEGER,
-  Seg: DataTypes.INTEGER
+const CompostagemDado = sequelize.define('CompostagemDado', {
+  t_com: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  t_amb: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  u_amb: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  tensao: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  data_hora: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+}, {
+  tableName: 'compostagem_dados',
+  timestamps: false, 
 });
 
-module.exports = Registro;
+module.exports = CompostagemDado;
