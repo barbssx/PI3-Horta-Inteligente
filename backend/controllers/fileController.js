@@ -37,7 +37,7 @@ exports.uploadFile = async (req, res) => {
         u_amb: parseNumber(row.U_Amb),
         tensao: parseNumber(row['Tensão']),
         data_hora: data_hora.isValid() ? data_hora.toDate() : null,
-        Hora: data_hora.isValid() ? data_hora.format('HH:mm:ss') : null,
+        hora: data_hora.isValid() ? data_hora.format('HH:mm:ss') : null,
       };
     };
 
