@@ -24,13 +24,13 @@
 
 		<div class="btns">
 			<section class="access animate-fade-in">
-				<router-link to="/sobre" class="btn-acessar">Sobre</router-link>
+				<router-link to="/sobre" class="btn-acessar">Sobre o Projeto</router-link>
 			</section>
 			<section class="access animate-fade-in">
 				<router-link to="/dashboard" class="btn-acessar">Acessar Dashboard</router-link>
 			</section>
 			<section class="access animate-fade-in">
-				<router-link to="/conhecimento" class="btn-acessar">Conhecimento</router-link>
+				<router-link to="/conhecimento" class="btn-acessar">Conhecimentos</router-link>
 			</section>
 		</div>
 	</div>
