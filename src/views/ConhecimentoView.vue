@@ -163,7 +163,7 @@ export default {
 						<h3 class="text-lg font-semibold mt-6 mb-2">Ferramentas usadas</h3>
 						<ul class="custom-list analise-list" style="list-style:none;">
 							<li><strong>Vue.js:</strong> para construir a interface web responsiva e interativa.</li>
-							<li><strong>Tailwind CSS:</strong> para estilização rápida e consistente.</li>
+							<li><strong>Bootstrap:</strong> para estilização rápida e consistente.</li>
      					<li><strong>Vue.Charts (Chart.js):</strong> biblioteca de gráficos integrada ao Vue para criar visualizações interativas com os dados dos sensores.</li>
 						</ul>
 
