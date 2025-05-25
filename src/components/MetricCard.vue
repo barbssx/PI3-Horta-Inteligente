@@ -1,6 +1,6 @@
 <template>
 	<div class="card">
-		<h3>{{ title }}</h3>
+		<h4>{{ title }}</h4>
 		<p :style="{ color: valueColor }">{{ formattedValue }}</p>
 	</div>
 </template>

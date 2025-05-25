@@ -91,7 +91,7 @@ div {
 	width: 100%;
 	max-width: 1200px;
 	height: 680px;
-	margin: 100px auto;
+	margin: auto;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
