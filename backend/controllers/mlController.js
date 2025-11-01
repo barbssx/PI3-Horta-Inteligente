@@ -1,4 +1,4 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize, Op } = require("sequelize");
 const Registro = require("../models/Registro");
 const Previsao = require("../models/Previsao");
 
@@ -114,5 +114,38 @@ exports.ultimosComPrevisao = async (req, res) => {
   } catch (err) {
     console.error("Erro ao buscar previsões:", err);
     res.status(500).json({ erro: "Erro ao buscar previsões" });
+  }
+};
+
+exports.ultimosPorIntervalo = async (req, res) => {
+  try {
+    const { intervalo = "1d" } = req.query;
+    const agora = new Date();
+    let dataInicio;
+
+    switch (intervalo) {
+      case "6h":
+        dataInicio = new Date(agora - 6 * 60 * 60 * 1000);
+        break;
+      case "1w":
+        dataInicio = new Date(agora - 7 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        dataInicio = new Date(agora - 24 * 60 * 60 * 1000); // 1 dia
+    }
+
+    const previsoes = await Previsao.findAll({
+      where: {
+        data: {
+          [Op.gte]: dataInicio,
+        },
+      },
+      order: [["data", "ASC"]],
+    });
+
+    res.json(previsoes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ erro: "Erro ao buscar previsões." });
   }
 };
