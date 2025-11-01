@@ -32,6 +32,10 @@
 			<section class="access animate-fade-in">
 				<router-link to="/conhecimento" class="btn-acessar">Conhecimentos</router-link>
 			</section>
+
+			<section class="access animate-fade-in">
+				<router-link to="/previsoes" class="btn-acessar">Previsões</router-link>
+			</section>
 		</div>
 	</div>
 </template>
