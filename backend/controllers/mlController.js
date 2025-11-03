@@ -131,21 +131,206 @@ exports.ultimosPorIntervalo = async (req, res) => {
         dataInicio = new Date(agora - 7 * 24 * 60 * 60 * 1000);
         break;
       default:
-        dataInicio = new Date(agora - 24 * 60 * 60 * 1000); // 1 dia
+        dataInicio = new Date(agora - 24 * 60 * 60 * 1000);
     }
 
-    const previsoes = await Previsao.findAll({
-      where: {
-        data: {
-          [Op.gte]: dataInicio,
-        },
-      },
-      order: [["data", "ASC"]],
+    const registros = await Registro.findAll({
+      where: Sequelize.literal(`
+                CAST(CONCAT(data, ' ', hora) AS DATETIME) >= '${dataInicio
+                  .toISOString()
+                  .replace("T", " ")
+                  .substring(0, 19)}'
+            `),
+      order: [
+        ["data", "ASC"],
+        ["hora", "ASC"],
+      ],
+      raw: true,
     });
 
-    res.json(previsoes);
+    console.log(
+      `Registros encontrados no intervalo (${intervalo}):`,
+      registros.length
+    );
+    res.json(registros);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ erro: "Erro ao buscar previsões." });
+    console.error("Erro ao buscar registros por intervalo:", error);
+    res.status(500).json({ erro: "Erro ao buscar registros por intervalo." });
+  }
+};
+
+exports.verificarAnomalias = async (req, res) => {
+  try {
+    const limiteTolerancia = 3.0;
+
+    const ultimasPrevisoes = await Previsao.findAll({
+      limit: 10,
+      order: [["id", "DESC"]],
+      raw: true,
+    });
+
+    const anomalias = ultimasPrevisoes
+      .filter((p) => {
+        if (p.temperatura_real === null || p.temperatura_prevista === null) {
+          return false;
+        }
+        const desvio = Math.abs(p.temperatura_real - p.temperatura_prevista);
+        return desvio > limiteTolerancia;
+      })
+      .map((p) => ({
+        idRegistro: p.registro_id,
+        data: p.data,
+        hora: p.hora,
+        desvio: parseFloat(
+          Math.abs(p.temperatura_real - p.temperatura_prevista).toFixed(2)
+        ),
+        alerta: `Desvio de ${Math.abs(
+          p.temperatura_real - p.temperatura_prevista
+        ).toFixed(2)}°C excede o limite de ${limiteTolerancia}°C.`,
+      }));
+
+    if (anomalias.length > 0) {
+      console.log(`ANOMALIA DETECTADA! Total: ${anomalias.length}`);
+      res.json({ mensagem: "Anomalias detectadas", anomalias });
+    } else {
+      res.json({
+        mensagem: "Nenhuma anomalia crítica detectada nas últimas medições.",
+      });
+    }
+  } catch (err) {
+    console.error("Erro ao verificar anomalias:", err);
+    res.status(500).json({ erro: "Erro ao verificar anomalias." });
+  }
+};
+
+exports.calcularAcuraciaModelo = async (req, res) => {
+  try {
+    const previsoes = await Previsao.findAll({
+      attributes: ["temperatura_real", "temperatura_prevista"],
+      where: {
+        temperatura_real: { [Op.not]: null },
+        temperatura_prevista: { [Op.not]: null },
+      },
+      raw: true,
+    });
+
+    if (!previsoes.length) {
+      return res.json({
+        mensagem: "Nenhuma previsão completa para calcular a acurácia.",
+      });
+    }
+
+    let somaErrosQuadrados = 0;
+    let n = 0;
+
+    previsoes.forEach((p) => {
+      const erro = p.temperatura_real - p.temperatura_prevista;
+      somaErrosQuadrados += erro * erro;
+      n++;
+    });
+
+    const mse = somaErrosQuadrados / n;
+    const rmse = Math.sqrt(mse);
+
+    const acuracia = {
+      totalPrevisoes: n,
+      MSE: parseFloat(mse.toFixed(4)),
+      RMSE: parseFloat(rmse.toFixed(4)),
+      mensagem: `O modelo erra em média em ±${rmse.toFixed(
+        2
+      )} °C na previsão. (RMSE)`,
+    };
+
+    res.json(acuracia);
+  } catch (err) {
+    console.error("Erro ao calcular acurácia do modelo:", err);
+    res.status(500).json({ erro: "Erro ao calcular acurácia do modelo." });
+  }
+};
+
+exports.gerarComandosDeOtimizacao = async (req, res) => {
+  try {
+    const ultimaPrevisao = await Previsao.findOne({
+      order: [["id", "DESC"]],
+      raw: true,
+      where: {
+        temperatura_prevista: { [Op.not]: null },
+        umidade_prevista: { [Op.not]: null },
+      },
+    });
+
+    if (!ultimaPrevisao) {
+      return res.json({
+        mensagem: "Nenhuma previsão completa encontrada para otimização.",
+      });
+    }
+
+    const t_com = ultimaPrevisao.temperatura_prevista;
+    const u_amb = ultimaPrevisao.umidade_prevista;
+
+    const comandos = [];
+    const t_ideal_min = 55.0;
+    const t_ideal_max = 65.0;
+    const u_ideal_min = 40.0;
+    const u_ideal_max = 60.0;
+
+    if (t_com > t_ideal_max + 3.0) {
+      comandos.push({
+        acao: "REDUZIR_TEMPERATURA",
+        prioridade: "CRÍTICA",
+        justificativa: `Previsão de T_Comp (${t_com.toFixed(
+          2
+        )}°C) indica superaquecimento. Aere vigorosamente OU umedeça para resfriar.`,
+      });
+    }
+
+    if (t_com < t_ideal_min) {
+      comandos.push({
+        acao: "AUMENTAR_TEMPERATURA",
+        prioridade: "ALTA",
+        justificativa: `Previsão de T_Comp (${t_com.toFixed(
+          2
+        )}°C) indica estagnação. Adicione mais Nitrogênio OU vire a leira.`,
+      });
+    }
+
+    if (u_amb < u_ideal_min + 5.0) {
+      comandos.push({
+        acao: "IRRIGAR_LEVEMENTE",
+        prioridade: "MÉDIA",
+        justificativa: `Previsão de Umidade (${u_amb.toFixed(
+          2
+        )}%) está caindo. Regue levemente para evitar interrupção do processo.`,
+      });
+    }
+
+    if (u_amb > u_ideal_max) {
+      comandos.push({
+        acao: "ADICIONAR_CARBONO_SECO_OU_AERAR",
+        prioridade: "ALTA",
+        justificativa: `Previsão de Umidade (${u_amb.toFixed(
+          2
+        )}%) está alta. Isso pode levar à falta de oxigênio. Adicione material seco (Carbono) e aere.`,
+      });
+    }
+
+    if (comandos.length > 0) {
+      res.json({
+        mensagem: `Comandos PREDITIVOS gerados com base na previsão para ${ultimaPrevisao.data} às ${ultimaPrevisao.hora}.`,
+        tipoAnalise: "PREDITIVA (usando T_Prevista e U_Prevista)",
+        dadosAnalisados: { t_previsto: t_com, u_previsto: u_amb },
+        comandos,
+      });
+    } else {
+      res.json({
+        mensagem:
+          "As condições previstas estão na faixa ideal. Nenhuma intervenção preditiva necessária.",
+        tipoAnalise: "PREDITIVA",
+        dadosAnalisados: { t_previsto: t_com, u_previsto: u_amb },
+      });
+    }
+  } catch (err) {
+    console.error("Erro ao gerar comandos de otimização:", err);
+    res.status(500).json({ erro: "Erro ao gerar comandos de otimização." });
   }
 };

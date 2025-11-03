@@ -45,7 +45,13 @@ export default {
 				return;
 			}
 
-			const labels = this.previsoes.map((p) => p.data);
+			const labels = this.previsoes.map((p) => {
+				const dataParte = p.data ? p.data.substring(5) : "";
+				const horaParte = p.hora ? p.hora.substring(0, 5) : "";
+
+				return `${dataParte} ${horaParte}`;
+			});
+
 			const tempReal = this.previsoes.map((p) => p.temperatura_real);
 			const tempPrev = this.previsoes.map((p) => p.temperatura_prevista);
 			const umiReal = this.previsoes.map((p) => p.umidade_real);
@@ -55,9 +61,11 @@ export default {
 				tooltip: {
 					trigger: "axis",
 					formatter: (params) => {
-						let texto = params[0].axisValue + "<br/>";
+						let texto = `**${params[0].axisValue}**<br/>`;
 						params.forEach((p) => {
-							texto += `${p.marker} ${p.seriesName}: <strong>${p.data}</strong><br/>`;
+							let unidade = p.seriesName.includes("Temp.") ? "°C" : "%";
+							let valor = p.data !== null ? p.data.toFixed(2) : "N/A";
+							texto += `${p.marker} ${p.seriesName}: <strong>${valor}${unidade}</strong><br/>`;
 						});
 						return texto;
 					},
@@ -66,10 +74,19 @@ export default {
 					data: ["Temp. Real", "Temp. Prevista", "Umid. Real", "Umid. Prevista"],
 					top: 0,
 				},
+				grid: {
+					left: "3%",
+					right: "3%",
+					bottom: "3%",
+					containLabel: true,
+				},
 				xAxis: {
 					type: "category",
 					data: labels,
 					boundaryGap: false,
+					axisLabel: {
+						interval: this.previsoes.length > 50 ? 5 : 0,
+					},
 				},
 				yAxis: [
 					{
@@ -77,7 +94,7 @@ export default {
 						name: "Temperatura (°C)",
 						position: "left",
 						min: 0,
-						max: 50,
+						max: 75,
 					},
 					{
 						type: "value",
@@ -96,6 +113,7 @@ export default {
 						yAxisIndex: 0,
 						lineStyle: { color: "#FF5733", width: 3 },
 						itemStyle: { color: "#FF5733" },
+						symbol: "none",
 					},
 					{
 						name: "Temp. Prevista",
@@ -105,6 +123,7 @@ export default {
 						yAxisIndex: 0,
 						lineStyle: { color: "#FFC300", width: 3, type: "dashed" },
 						itemStyle: { color: "#FFC300" },
+						symbol: "none",
 					},
 					{
 						name: "Umid. Real",
@@ -114,6 +133,7 @@ export default {
 						yAxisIndex: 1,
 						lineStyle: { color: "#3498DB", width: 3 },
 						itemStyle: { color: "#3498DB" },
+						symbol: "none",
 					},
 					{
 						name: "Umid. Prevista",
@@ -123,11 +143,12 @@ export default {
 						yAxisIndex: 1,
 						lineStyle: { color: "#2ECC71", width: 3, type: "dashed" },
 						itemStyle: { color: "#2ECC71" },
+						symbol: "none",
 					},
 				],
 			};
 
-			this.chartInstance.setOption(option);
+			this.chartInstance.setOption(option, true);
 		},
 	},
 };

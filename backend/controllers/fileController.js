@@ -71,22 +71,30 @@ exports.uploadFile = async (req, res) => {
       const BATCH_SIZE = 500;
       let batch = [];
 
+      let isHeaderRow = true;
+
       for await (const worksheet of workbook) {
         for await (const row of worksheet) {
+          if (isHeaderRow) {
+            isHeaderRow = false;
+            continue;
+          }
+
           const registro = parseRow({
-            Ano: row.getCell("Ano").value || row.getCell(1).value,
-            Mês: row.getCell("Mês").value || row.getCell(2).value,
-            Dia: row.getCell("Dia").value || row.getCell(3).value,
-            Hora: row.getCell("Hora").value || row.getCell(4).value,
-            Min: row.getCell("Min").value || row.getCell(5).value,
-            Seg: row.getCell("Seg").value || row.getCell(6).value,
-            T_Comp: row.getCell("T_Comp").value || row.getCell(7).value,
-            T_Amb: row.getCell("T_Amb").value || row.getCell(8).value,
-            U_Amb: row.getCell("U_Amb").value || row.getCell(9).value,
-            Tensão: row.getCell("Tensão").value || row.getCell(10).value,
+            T_Comp: row.getCell(1).value,
+            T_Amb: row.getCell(2).value,
+            U_Amb: row.getCell(3).value,
+            Tensão: row.getCell(4).value,
+            Ano: row.getCell(5).value,
+            Mês: row.getCell(6).value,
+            Dia: row.getCell(7).value,
+            Hora: row.getCell(8).value,
+            Min: row.getCell(9).value,
+            Seg: row.getCell(10).value,
           });
 
-          if (registro.data && registro.hora) batch.push(registro);
+          if (registro.t_com !== null && registro.data && registro.hora)
+            batch.push(registro);
 
           if (batch.length >= BATCH_SIZE) {
             await Registro.bulkCreate(batch);

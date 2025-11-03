@@ -3,11 +3,19 @@
 		<div class="card shadow-sm text-center p-4 previsao-card" :class="[tipoClass, { 'alerta-alto': isAlto, 'alerta-baixo': isBaixo }]">
 			<div class="icon mb-2">{{ icon }}</div>
 			<h5 class="title mb-2">{{ title }}</h5>
-			<p class="mb-1">
-				Real: <strong class="valor-real">{{ real }}</strong>
+
+			<p :class="{ 'mb-0': !shouldShowPrev }">
+				<span v-if="shouldShowPrev">Real: </span>
+				<strong class="valor-real"
+					>{{ real }}<span v-if="unidade">{{ unidade }}</span></strong
+				>
 			</p>
-			<p>
-				Prevista: <strong class="valor-prev">{{ prev }}</strong>
+
+			<p v-if="shouldShowPrev">
+				Prevista:
+				<strong class="valor-prev"
+					>{{ prev }}<span v-if="unidade">{{ unidade }}</span></strong
+				>
 			</p>
 		</div>
 	</div>
@@ -20,6 +28,7 @@ export default {
 		real: { type: [Number, String], required: true },
 		prev: { type: [Number, String], required: true },
 		icon: { type: String, default: "📊" },
+		unidade: { type: String, default: "" },
 	},
 	computed: {
 		isAlto() {
@@ -31,8 +40,14 @@ export default {
 		tipoClass() {
 			if (this.title.toLowerCase().includes("temperatura")) return "card-temp";
 			if (this.title.toLowerCase().includes("umidade")) return "card-umi";
-			if (this.title.toLowerCase().includes("total")) return "card-total";
+			if (this.title.toLowerCase().includes("acurácia")) return "card-acuracia";
+			if (this.title.toLowerCase().includes("total") || this.title.toLowerCase().includes("registros")) return "card-total";
 			return "";
+		},
+		shouldShowPrev() {
+			if (this.title.toLowerCase().includes("acurácia")) return false;
+			if (this.title.toLowerCase().includes("total") || this.title.toLowerCase().includes("registros")) return false;
+			return String(this.prev).length > 0;
 		},
 	},
 };
@@ -75,6 +90,9 @@ export default {
 }
 .card-total {
 	background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+}
+.card-acuracia {
+	background: linear-gradient(135deg, #b2fefd 0%, #a6d9e0 100%); /* Estilo para RMSE */
 }
 
 .alerta-alto {

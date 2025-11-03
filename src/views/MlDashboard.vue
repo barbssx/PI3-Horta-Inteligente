@@ -2,14 +2,12 @@
 	<div class="container py-4">
 		<h2 class="text-center mb-4 display-6 fw-bold text-primary">🌿 Painel de Previsões</h2>
 
-		<!-- Controles principais -->
 		<div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
 			<button class="btn btn-primary shadow-sm" @click="treinarModelo">🧠 Treinar Modelo</button>
 			<button class="btn btn-success shadow-sm" @click="gerarPrevisoes">📈 Gerar Previsões</button>
 			<button class="btn btn-outline-secondary shadow-sm" @click="buscarPrevisoes">🔄 Atualizar</button>
 		</div>
 
-		<!-- Intervalos de tempo -->
 		<div class="text-center mb-4">
 			<ul class="nav nav-pills justify-content-center flex-wrap">
 				<li class="nav-item" v-for="(label, key) in intervalos" :key="key">
@@ -20,20 +18,30 @@
 			</ul>
 		</div>
 
-		<!-- Alertas globais -->
+		<div v-if="comandosOtimizacao && comandosOtimizacao.comandos && comandosOtimizacao.comandos.length" class="mb-4">
+			<div class="alert alert-danger shadow-sm d-flex align-items-center gap-3" role="alert">
+				<h4 class="alert-heading mb-0">🚨 AÇÃO URGENTE NECESSÁRIA</h4>
+				<div>
+					<p class="mb-1 fw-bold">{{ comandosOtimizacao.comandos[0].acao }} ({{ comandosOtimizacao.comandos[0].prioridade }})</p>
+					<small>{{ comandosOtimizacao.comandos[0].justificativa }}</small>
+				</div>
+			</div>
+		</div>
+		<div v-else-if="comandosOtimizacao && comandosOtimizacao.mensagem && !loading" class="alert alert-success shadow-sm text-center mb-4">
+			✅ {{ comandosOtimizacao.mensagem }}
+		</div>
+
 		<div v-if="alertas.length" class="mb-3">
 			<div v-for="(alerta, i) in alertas" :key="i" class="alert alert-warning shadow-sm d-flex align-items-center gap-2" role="alert">⚠️ {{ alerta }}</div>
 		</div>
 
-		<!-- Carregando -->
 		<div v-if="loading" class="text-center text-muted py-5">
 			<div class="spinner-border" role="status"></div>
-			<p class="mt-2">Carregando dados...</p>
+			<p class="mt-2">Carregando dados de inteligência...</p>
 		</div>
 
-		<!-- Nenhum dado -->
 		<div v-if="!previsoes.length && !loading" class="alert alert-info text-center shadow-sm">
-			Nenhuma previsão encontrada. Gere previsões ou treine o modelo para começar!
+			Nenhuma previsão recente encontrada no intervalo. Gere previsões ou treine o modelo para começar!
 		</div>
 
 		<div v-else>
@@ -52,10 +60,18 @@
 			<div v-if="abaSelecionada === 'cards'" class="row g-3 mb-4">
 				<PrevisaoCard title="Temperatura Média (°C)" :real="mediaTempReal" :prev="mediaTempPrev" icon="🌞" />
 				<PrevisaoCard title="Umidade Média (%)" :real="mediaUmiReal" :prev="mediaUmiPrev" icon="💧" />
-				<PrevisaoCard title="Total de Previsões" :real="previsoes.length" :prev="0" icon="📊" />
+
+				<PrevisaoCard
+					title="Acurácia (RMSE)"
+					:real="rmse ? parseFloat(rmse).toFixed(2) : 'N/A'"
+					prev=""
+					icon="🎯"
+					:unidade="rmse && rmse !== 'N/A' ? '°C' : ''"
+				/>
+
+				<PrevisaoCard title="Total de Registros" :real="previsoes.length" :prev="0" icon="📊" />
 			</div>
 
-			<!-- Aba Gráfico -->
 			<div v-if="abaSelecionada === 'chart'">
 				<PrevisaoChart :previsoes="previsoes" :intervalo="intervaloSelecionado" />
 			</div>
@@ -86,6 +102,9 @@ export default {
 			alertas: [],
 			intervaloSelecionado: "1d",
 			abaSelecionada: "cards",
+			rmse: null,
+			comandosOtimizacao: null,
+
 			intervalos: {
 				"6h": "Últimas 6h",
 				"1d": "Último Dia",
@@ -121,11 +140,34 @@ export default {
 			this.buscarPrevisoes(novo);
 		},
 
+		async buscarComandos() {
+			try {
+				const res = await axios.get(`${API_URL}/ml/comandos-otimizacao`);
+				this.comandosOtimizacao = res.data;
+			} catch (error) {
+				console.error("Erro ao buscar comandos de otimização:", error);
+				this.comandosOtimizacao = { mensagem: "Erro ao carregar comandos." };
+			}
+		},
+
+		async buscarAcuracia() {
+			try {
+				const res = await axios.get(`${API_URL}/ml/acuracia`);
+				this.rmse = res.data.RMSE || "N/A";
+			} catch (error) {
+				console.error("Erro ao buscar acurácia do modelo:", error);
+				this.rmse = "Erro";
+			}
+		},
+
 		async buscarPrevisoes(intervalo = this.intervaloSelecionado) {
 			this.loading = true;
 			try {
 				const res = await axios.get(`${API_URL}/ml/ultimos-intervalo`, { params: { intervalo } });
 				this.previsoes = res.data;
+
+				await Promise.all([this.buscarComandos(), this.buscarAcuracia()]);
+
 				this.verificarAlertas();
 			} catch (error) {
 				console.error(error);
@@ -138,6 +180,8 @@ export default {
 			try {
 				await axios.post(`${API_URL}/ml/treinar`);
 				alert("Modelo treinado com sucesso!");
+				await this.buscarAcuracia();
+				await this.gerarPrevisoes();
 			} catch {
 				alert("Erro ao treinar modelo.");
 			}
@@ -156,9 +200,9 @@ export default {
 		verificarAlertas() {
 			this.alertas = [];
 			this.previsoes.forEach((p) => {
-				if (p.temperatura_prevista > 40) this.alertas.push(`Temperatura alta prevista em ${p.data}: ${p.temperatura_prevista}°C`);
-				if (p.temperatura_prevista < 10) this.alertas.push(`Temperatura muito baixa prevista em ${p.data}: ${p.temperatura_prevista}°C`);
-				if (p.umidade_prevista < 30) this.alertas.push(`Umidade crítica em ${p.data}: ${p.umidade_prevista}%`);
+				if (p.umidade_prevista < 30) {
+					this.alertas.push(`⚠️ Umidade crítica prevista em ${p.data}: ${p.umidade_prevista}%`);
+				}
 			});
 		},
 	},

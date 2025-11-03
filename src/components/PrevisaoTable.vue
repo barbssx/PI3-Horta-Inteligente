@@ -26,10 +26,10 @@
 						>
 							<td>{{ p.data }}</td>
 							<td>{{ p.hora }}</td>
-							<td>{{ p.temperatura_real }}</td>
-							<td>{{ p.temperatura_prevista }}</td>
-							<td>{{ p.umidade_real }}</td>
-							<td>{{ p.umidade_prevista }}</td>
+							<td>{{ formatValue(p.temperatura_real) }}</td>
+							<td>{{ formatValue(p.temperatura_prevista) }}</td>
+							<td>{{ formatValue(p.umidade_real) }}</td>
+							<td>{{ formatValue(p.umidade_prevista) }}</td>
 						</tr>
 					</tbody>
 				</table>
@@ -42,6 +42,12 @@
 <script>
 export default {
 	props: ["previsoes"],
+	methods: {
+		formatValue(value) {
+			if (value === null || value === undefined) return "N/A";
+			return parseFloat(value).toFixed(2);
+		},
+	},
 };
 </script>
 
