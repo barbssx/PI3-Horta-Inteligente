@@ -133,13 +133,16 @@ exports.ultimosPorIntervalo = async (req, res) => {
       default:
         dataInicio = new Date(agora - 24 * 60 * 60 * 1000); // 1 dia
     }
+
+    const dataFormatada = dataInicio
+      .toISOString()
+      .replace("T", " ")
+      .substring(0, 19);
+
     const previsoes = await Previsao.findAll({
-      where: Sequelize.literal(`
-                CAST(CONCAT(CAST(data AS DATE), ' ', hora) AS DATETIME) >= '${dataInicio
-        .toISOString()
-        .replace("T", " ")
-        .substring(0, 19)}'
-            `),
+      where: Sequelize.literal(
+        `CAST(CONCAT(CAST(data AS DATE), ' ', hora) AS DATETIME) >= '${dataFormatada}'`
+      ),
       order: [
         ["data", "ASC"],
         ["hora", "ASC"],
