@@ -133,10 +133,9 @@ exports.ultimosPorIntervalo = async (req, res) => {
       default:
         dataInicio = new Date(agora - 24 * 60 * 60 * 1000); // 1 dia
     }
-
     const previsoes = await Previsao.findAll({
       where: Sequelize.literal(`
-                CAST(CONCAT(data, ' ', hora) AS DATETIME) >= '${dataInicio
+                CAST(CONCAT(CAST(data AS DATE), ' ', hora) AS DATETIME) >= '${dataInicio
         .toISOString()
         .replace("T", " ")
         .substring(0, 19)}'
@@ -154,7 +153,7 @@ exports.ultimosPorIntervalo = async (req, res) => {
     );
     res.json(previsoes);
   } catch (error) {
-    console.error("Erro ao buscar previsões por intervalo:", error); // Msg de erro atualizada
+    console.error("Erro ao buscar previsões por intervalo:", error);
     res.status(500).json({ erro: "Erro ao buscar previsões por intervalo." });
   }
 };

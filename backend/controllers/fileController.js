@@ -22,17 +22,25 @@ exports.uploadFile = async (req, res) => {
     };
 
     const parseRow = (row) => {
-      const data = moment({
-        year: parseInt(row.Ano),
-        month: parseInt(row["Mês"]) - 1,
-        day: parseInt(row.Dia),
-      }).format("YYYY-MM-DD");
+      const ano = parseInt(row.Ano);
+      const mes = parseInt(row["Mês"]) - 1;
+      const dia = parseInt(row.Dia);
 
-      const hora = moment({
-        hour: parseInt(row.Hora),
-        minute: parseInt(row.Min),
-        second: parseInt(row.Seg),
-      }).format("HH:mm:ss");
+      const horaNum = parseInt(row.Hora);
+      const minNum = parseInt(row.Min);
+      const segNum = parseInt(row.Seg);
+
+      const momentData = moment({ year: ano, month: mes, day: dia });
+      const data = momentData.isValid()
+        ? momentData.format("YYYY-MM-DD")
+        : null;
+
+      const momentHora = moment({
+        hour: horaNum,
+        minute: minNum,
+        second: segNum,
+      });
+      const hora = momentHora.isValid() ? momentHora.format("HH:mm:ss") : null;
 
       return {
         t_com: parseNumber(row.T_Comp),
@@ -48,12 +56,19 @@ exports.uploadFile = async (req, res) => {
       fs.createReadStream(uploadPath)
         .pipe(csv({ separator: "\t" }))
         .on("data", (row) => {
-          console.log("Linha lida:", row);
+          console.log("Linha lida (CSV):", row);
           const registro = parseRow(row);
-          if (registro.data && registro.hora) {
+          if (
+            registro.t_com !== null &&
+            registro.data !== null &&
+            registro.hora !== null
+          ) {
             registros.push(registro);
           } else {
-            console.warn("Data ou hora inválidas para a linha:", row);
+            console.warn(
+              "Linha CSV pulada por conter data ou hora inválida:",
+              row
+            );
           }
         })
         .on("end", async () => {
@@ -70,7 +85,6 @@ exports.uploadFile = async (req, res) => {
 
       const BATCH_SIZE = 500;
       let batch = [];
-
       let isHeaderRow = true;
 
       for await (const worksheet of workbook) {
@@ -93,8 +107,18 @@ exports.uploadFile = async (req, res) => {
             Seg: row.getCell(10).value,
           });
 
-          if (registro.t_com !== null && registro.data && registro.hora)
+          if (
+            registro.t_com !== null &&
+            registro.data !== null &&
+            registro.hora !== null
+          ) {
             batch.push(registro);
+          } else {
+            console.warn(
+              "Linha XLSX pulada por conter data ou hora inválida:",
+              row.values
+            );
+          }
 
           if (batch.length >= BATCH_SIZE) {
             await Registro.bulkCreate(batch);

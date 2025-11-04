@@ -1,4 +1,4 @@
-const { Op, fn, col, where } = require("sequelize");
+const { Op } = require("sequelize");
 const CompostagemDado = require("../models/Registro.js");
 
 exports.getAll = async (req, res) => {
@@ -7,9 +7,17 @@ exports.getAll = async (req, res) => {
 
     if (!data) return res.json([]);
 
+    const dataInicio = new Date(data);
+    dataInicio.setHours(0, 0, 0, 0);
+
+    const dataFim = new Date(data);
+    dataFim.setHours(23, 59, 59, 999);
+
     const registros = await CompostagemDado.findAll({
       where: {
-        data: data,
+        data: {
+          [Op.between]: [dataInicio, dataFim],
+        },
       },
       order: [["id", "DESC"]],
     });
