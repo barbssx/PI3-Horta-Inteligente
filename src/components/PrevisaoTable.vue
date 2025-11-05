@@ -2,6 +2,7 @@
 	<div class="card shadow-sm mb-4">
 		<div class="card-body">
 			<h5 class="card-title text-center mb-3 text-primary">Últimas Previsões</h5>
+
 			<div class="table-responsive">
 				<table class="table table-striped table-hover align-middle text-center">
 					<thead class="table-dark">
@@ -15,16 +16,8 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr
-							v-for="p in previsoes"
-							:key="p.id"
-							:class="{
-								'alerta-alto': p.temperatura_prevista > 40,
-								'alerta-baixo': p.temperatura_prevista < 10,
-								'umidade-baixa': p.umidade_prevista < 30,
-							}"
-						>
-							<td>{{ p.data }}</td>
+						<tr v-for="p in previsoes" :key="p.id" :class="rowClass(p)">
+							<td>{{ formatDataBR(p.data) }}</td>
 							<td>{{ p.hora }}</td>
 							<td>{{ formatValue(p.temperatura_real) }}</td>
 							<td>{{ formatValue(p.temperatura_prevista) }}</td>
@@ -34,6 +27,7 @@
 					</tbody>
 				</table>
 			</div>
+
 			<p class="text-muted text-center mt-2">🔹 Cores destacam valores críticos para facilitar a leitura.</p>
 		</div>
 	</div>
@@ -44,8 +38,24 @@ export default {
 	props: ["previsoes"],
 	methods: {
 		formatValue(value) {
-			if (value === null || value === undefined) return "N/A";
-			return parseFloat(value).toFixed(2);
+			if (value === null || value === undefined || value === "") return "N/A";
+			const num = parseFloat(value);
+			return isNaN(num) ? "N/A" : num.toFixed(2);
+		},
+		formatDataBR(dataString) {
+			if (!dataString) return "N/A";
+			const date = new Date(dataString);
+			if (isNaN(date)) return dataString;
+			const dia = String(date.getDate()).padStart(2, "0");
+			const mes = String(date.getMonth() + 1).padStart(2, "0");
+			const ano = date.getFullYear();
+			return `${dia}/${mes}/${ano}`;
+		},
+		rowClass(p) {
+			if (p.temperatura_prevista > 40) return "alerta-alto";
+			if (p.temperatura_prevista < 10) return "alerta-baixo";
+			if (p.umidade_prevista < 30) return "umidade-baixa";
+			return "";
 		},
 	},
 };

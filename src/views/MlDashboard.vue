@@ -1,14 +1,18 @@
 <template>
 	<div class="container py-4">
-		<h2 class="text-center mb-4 display-6 fw-bold text-primary">🌿 Painel de Previsões</h2>
+		<header class="text-center">
+			<h2 class="mb-4 display-6 fw-bold text-primary">🌿 Painel de Controlo da Compostagem</h2>
+		</header>
 
-		<div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
-			<button class="btn btn-primary shadow-sm" @click="treinarModelo">🧠 Treinar Modelo</button>
-			<button class="btn btn-success shadow-sm" @click="gerarPrevisoes">📈 Gerar Previsões</button>
-			<button class="btn btn-outline-secondary shadow-sm" @click="buscarPrevisoes">🔄 Atualizar</button>
-		</div>
+		<section class="actions-bar mb-4">
+			<div class="d-flex justify-content-center flex-wrap gap-2">
+				<button class="btn btn-primary shadow-sm" @click="treinarModelo">🧠 Treinar Modelo</button>
+				<button class="btn btn-success shadow-sm" @click="gerarPrevisoes">📈 Gerar Previsões</button>
+				<button class="btn btn-outline-secondary shadow-sm" @click="buscarPrevisoes">🔄 Atualizar</button>
+			</div>
+		</section>
 
-		<div class="text-center mb-4">
+		<section class="interval-selector text-center mb-4">
 			<ul class="nav nav-pills justify-content-center flex-wrap">
 				<li class="nav-item" v-for="(label, key) in intervalos" :key="key">
 					<button class="nav-link" :class="{ active: intervaloSelecionado === key }" @click="alterarIntervalo(key)">
@@ -16,70 +20,84 @@
 					</button>
 				</li>
 			</ul>
-		</div>
+		</section>
 
-		<div v-if="comandosOtimizacao && comandosOtimizacao.comandos && comandosOtimizacao.comandos.length" class="mb-4">
-			<div class="alert alert-danger shadow-sm d-flex align-items-center gap-3" role="alert">
+		<section class="alerts-area mb-4">
+			<div v-if="comandosOtimizacao?.comandos?.length" class="alert alert-danger shadow-sm d-flex align-items-center gap-3" role="alert">
 				<h4 class="alert-heading mb-0">🚨 AÇÃO URGENTE NECESSÁRIA</h4>
 				<div>
-					<p class="mb-1 fw-bold">{{ comandosOtimizacao.comandos[0].acao }} ({{ comandosOtimizacao.comandos[0].prioridade }})</p>
+					<p class="mb-1 fw-bold">
+						{{ comandosOtimizacao.comandos[0].acao }}
+						({{ comandosOtimizacao.comandos[0].prioridade }})
+					</p>
 					<small>{{ comandosOtimizacao.comandos[0].justificativa }}</small>
 				</div>
 			</div>
-		</div>
-		<div v-else-if="comandosOtimizacao && comandosOtimizacao.mensagem && !loading" class="alert alert-success shadow-sm text-center mb-4">
-			✅ {{ comandosOtimizacao.mensagem }}
-		</div>
+			<div v-else-if="comandosOtimizacao?.mensagem && !loading" class="alert alert-success shadow-sm text-center">✅ {{ comandosOtimizacao.mensagem }}</div>
+		</section>
 
-		<div v-if="alertas.length" class="mb-3">
-			<div v-for="(alerta, i) in alertas" :key="i" class="alert alert-warning shadow-sm d-flex align-items-center gap-2" role="alert">⚠️ {{ alerta }}</div>
-		</div>
-
-		<div v-if="loading" class="text-center text-muted py-5">
+		<section v-if="loading" class="loading-state text-center text-muted py-5">
 			<div class="spinner-border" role="status"></div>
 			<p class="mt-2">Carregando dados de inteligência...</p>
-		</div>
+		</section>
 
-		<div v-if="!previsoes.length && !loading" class="alert alert-info text-center shadow-sm">
-			Nenhuma previsão recente encontrada no intervalo. Gere previsões ou treine o modelo para começar!
-		</div>
+		<section v-else-if="!previsoes.length" class="empty-state">
+			<div class="alert alert-info text-center shadow-sm">Nenhuma previsão recente encontrada no intervalo. Gere previsões ou treine o modelo para começar!</div>
+		</section>
 
-		<div v-else>
-			<ul class="nav nav-tabs mb-3 justify-content-center">
-				<li class="nav-item">
-					<button class="nav-link" :class="{ active: abaSelecionada === 'cards' }" @click="abaSelecionada = 'cards'">Métricas</button>
-				</li>
-				<li class="nav-item">
-					<button class="nav-link" :class="{ active: abaSelecionada === 'chart' }" @click="abaSelecionada = 'chart'">Gráficos</button>
-				</li>
-				<li class="nav-item">
-					<button class="nav-link" :class="{ active: abaSelecionada === 'table' }" @click="abaSelecionada = 'table'">Tabela</button>
-				</li>
-			</ul>
+		<main v-else>
+			<nav class="content-tabs mb-3">
+				<ul class="nav nav-tabs justify-content-center">
+					<li class="nav-item">
+						<button class="nav-link" :class="{ active: abaSelecionada === 'cards' }" @click="abaSelecionada = 'cards'">Métricas Atuais</button>
+					</li>
+					<li class="nav-item">
+						<button class="nav-link" :class="{ active: abaSelecionada === 'chart' }" @click="abaSelecionada = 'chart'">Gráficos de Tendência</button>
+					</li>
+					<li class="nav-item">
+						<button class="nav-link" :class="{ active: abaSelecionada === 'table' }" @click="abaSelecionada = 'table'">Tabela de Dados</button>
+					</li>
+				</ul>
+			</nav>
 
-			<div v-if="abaSelecionada === 'cards'" class="row g-3 mb-4">
-				<PrevisaoCard title="Temperatura Média (°C)" :real="mediaTempReal" :prev="mediaTempPrev" icon="🌞" />
-				<PrevisaoCard title="Umidade Média (%)" :real="mediaUmiReal" :prev="mediaUmiPrev" icon="💧" />
+			<section class="tab-content">
+				<div v-if="abaSelecionada === 'cards'" class="row g-3 mb-4">
+					<PrevisaoCard
+						title="Temperatura Atual"
+						:real="tempAtual"
+						prev=""
+						icon="🌡️"
+						unidade="°C"
+						descricao="A última temperatura real medida pela sonda dentro do composto."
+					/>
+					<PrevisaoCard
+						title="Próxima Previsão (Temp.)"
+						:real="tempPrevista"
+						prev=""
+						icon="🔮"
+						unidade="°C"
+						descricao="A previsão de temperatura para o próximo intervalo, calculada pelo modelo."
+					/>
+					<PrevisaoCard title="Humidade Atual" :real="umidAtual" prev="" icon="💧" unidade="%" descricao="A última humidade real medida no ambiente." />
+					<PrevisaoCard
+						title="Acurácia (RMSE)"
+						:real="rmse ? parseFloat(rmse).toFixed(2) : 'N/A'"
+						prev=""
+						icon="🎯"
+						:unidade="rmse && rmse !== 'N/A' ? '°C' : ''"
+						descricao="RMSE (Erro Quadrático Médio): Indica a margem de erro média das previsões do modelo. Quanto menor, melhor."
+					/>
+				</div>
 
-				<PrevisaoCard
-					title="Acurácia (RMSE)"
-					:real="rmse ? parseFloat(rmse).toFixed(2) : 'N/A'"
-					prev=""
-					icon="🎯"
-					:unidade="rmse && rmse !== 'N/A' ? '°C' : ''"
-				/>
+				<div v-if="abaSelecionada === 'chart'">
+					<PrevisaoChart :previsoes="previsoes" :intervalo="intervaloSelecionado" />
+				</div>
 
-				<PrevisaoCard title="Total de Registros" :real="previsoes.length" :prev="0" icon="📊" />
-			</div>
-
-			<div v-if="abaSelecionada === 'chart'">
-				<PrevisaoChart :previsoes="previsoes" :intervalo="intervaloSelecionado" />
-			</div>
-
-			<div v-if="abaSelecionada === 'table'">
-				<PrevisaoTable :previsoes="previsoes" />
-			</div>
-		</div>
+				<div v-if="abaSelecionada === 'table'">
+					<PrevisaoTable :previsoes="previsoes" />
+				</div>
+			</section>
+		</main>
 	</div>
 </template>
 
@@ -88,6 +106,7 @@ import axios from "axios";
 import PrevisaoCard from "../components/PrevisaoCard.vue";
 import PrevisaoChart from "../components/PrevisaoChart.vue";
 import PrevisaoTable from "../components/PrevisaoTable.vue";
+import * as bootstrap from "bootstrap";
 
 const API_URL = process.env.VUE_APP_API_URL || "https://dashboard-production-4d11e.up.railway.app/api";
 
@@ -104,7 +123,6 @@ export default {
 			abaSelecionada: "cards",
 			rmse: null,
 			comandosOtimizacao: null,
-
 			intervalos: {
 				"6h": "Últimas 6h",
 				"1d": "Último Dia",
@@ -114,30 +132,40 @@ export default {
 	},
 
 	computed: {
-		mediaTempReal() {
-			return this.calcMedia("temperatura_real");
+		ultimoRegistro() {
+			if (!this.previsoes || this.previsoes.length === 0) {
+				return { temperatura_real: 0, temperatura_prevista: 0, umidade_real: 0, umidade_prevista: 0 };
+			}
+			return this.previsoes[this.previsoes.length - 1];
 		},
-		mediaTempPrev() {
-			return this.calcMedia("temperatura_prevista");
+		tempAtual() {
+			return parseFloat(this.ultimoRegistro.temperatura_real).toFixed(1);
 		},
-		mediaUmiReal() {
-			return this.calcMedia("umidade_real");
+		tempPrevista() {
+			return parseFloat(this.ultimoRegistro.temperatura_prevista).toFixed(1);
 		},
-		mediaUmiPrev() {
-			return this.calcMedia("umidade_prevista");
+		umidAtual() {
+			return parseFloat(this.ultimoRegistro.umidade_real).toFixed(1);
+		},
+		umidPrevista() {
+			return parseFloat(this.ultimoRegistro.umidade_prevista).toFixed(1);
 		},
 	},
 
 	methods: {
-		calcMedia(campo) {
-			if (!this.previsoes.length) return 0;
-			const soma = this.previsoes.reduce((acc, p) => acc + (p[campo] || 0), 0);
-			return (soma / this.previsoes.length).toFixed(1);
-		},
-
 		alterarIntervalo(novo) {
 			this.intervaloSelecionado = novo;
 			this.buscarPrevisoes(novo);
+		},
+
+		initTooltips() {
+			const oldTooltips = document.querySelectorAll(".tooltip");
+			oldTooltips.forEach((tooltip) => tooltip.remove());
+
+			const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+			tooltipTriggerList.map(function (tooltipTriggerEl) {
+				return new bootstrap.Tooltip(tooltipTriggerEl);
+			});
 		},
 
 		async buscarComandos() {
@@ -162,6 +190,7 @@ export default {
 
 		async buscarPrevisoes(intervalo = this.intervaloSelecionado) {
 			this.loading = true;
+			this.previsoes = [];
 			try {
 				const res = await axios.get(`${API_URL}/ml/ultimos-intervalo`, { params: { intervalo } });
 				this.previsoes = res.data;
@@ -173,6 +202,9 @@ export default {
 				console.error(error);
 			} finally {
 				this.loading = false;
+				this.$nextTick(() => {
+					this.initTooltips();
+				});
 			}
 		},
 
@@ -199,11 +231,6 @@ export default {
 
 		verificarAlertas() {
 			this.alertas = [];
-			this.previsoes.forEach((p) => {
-				if (p.umidade_prevista < 30) {
-					this.alertas.push(`⚠️ Umidade crítica prevista em ${p.data}: ${p.umidade_prevista}%`);
-				}
-			});
 		},
 	},
 
@@ -232,7 +259,13 @@ export default {
 .nav-tabs .nav-link:hover {
 	background-color: #e7f1ff;
 }
-.alert {
+.alert-danger {
+	border-left: 5px solid #dc3545;
+}
+.alert-success {
+	border-left: 5px solid #28a745;
+}
+.alert-warning {
 	border-left: 5px solid #ffc107;
 }
 .btn {

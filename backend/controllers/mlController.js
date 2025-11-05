@@ -125,23 +125,23 @@ exports.ultimosPorIntervalo = async (req, res) => {
 
     switch (intervalo) {
       case "6h":
-        dataInicio = new Date(agora - 6 * 60 * 60 * 1000);
+        dataInicio = new Date(agora.getTime() - 6 * 60 * 60 * 1000);
         break;
       case "1w":
-        dataInicio = new Date(agora - 7 * 24 * 60 * 60 * 1000);
+        dataInicio = new Date(agora.getTime() - 7 * 24 * 60 * 60 * 1000);
         break;
       default:
-        dataInicio = new Date(agora - 24 * 60 * 60 * 1000); // 1 dia
+        dataInicio = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
     }
 
     const dataFormatada = dataInicio
       .toISOString()
-      .replace("T", " ")
-      .substring(0, 19);
+      .slice(0, 19)
+      .replace("T", " ");
 
     const previsoes = await Previsao.findAll({
       where: Sequelize.literal(
-        `CAST(CONCAT(CAST(data AS DATE), ' ', hora) AS DATETIME) >= '${dataFormatada}'`
+        `STR_TO_DATE(CONCAT(data, ' ', hora), '%Y-%m-%d %H:%i:%s') >= '${dataFormatada}'`
       ),
       order: [
         ["data", "ASC"],
