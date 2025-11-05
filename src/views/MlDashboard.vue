@@ -1,7 +1,7 @@
 <template>
 	<div class="container py-4">
 		<header class="text-center">
-			<h2 class="mb-4 display-6 fw-bold text-primary">🌿 Painel de Controlo da Compostagem</h2>
+			<h2 class="mb-4 display-6 fw-bold text-primary">🌿 Painel de Previsões</h2>
 		</header>
 
 		<section class="actions-bar mb-4">

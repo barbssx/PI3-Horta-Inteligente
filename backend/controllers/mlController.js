@@ -11,11 +11,28 @@ exports.treinarModelo = async (req, res) => {
 
     console.log("Registros encontrados para treinar:", registros.length);
 
-    if (!registros.length)
-      return res.status(400).json({ erro: "Sem dados para treinar" });
+    if (!registros.length) {
+      return res.status(400).json({
+        status: "erro",
+        titulo: "Erro ao Treinar Modelo",
+        mensagem:
+          "Não há dados disponíveis para treinar o modelo. Faça o upload de alguns registros primeiro.",
+        detalhes:
+          "O treinamento requer dados históricos de temperatura e umidade.",
+      });
+    }
+
+    if (registros.length < 5) {
+      return res.status(400).json({
+        status: "erro",
+        titulo: "Dados Insuficientes",
+        mensagem:
+          "São necessários pelo menos 5 registros para treinar o modelo.",
+        detalhes: `Atualmente há apenas ${registros.length} registro(s).`,
+      });
+    }
 
     const ultimos = registros.slice(-5);
-
     const soma = ultimos.reduce((acc, r) => acc + (r.t_com || 0), 0);
     const media = soma / ultimos.length;
 
@@ -23,10 +40,36 @@ exports.treinarModelo = async (req, res) => {
 
     console.log("Modelo treinado. Média dos últimos 5 registros:", media);
 
-    res.json({ mensagem: "Modelo treinado com sucesso", media });
+    const registrosSemPrevisao = await Registro.findAll({
+      where: {
+        id: {
+          [Sequelize.Op.notIn]: Sequelize.literal(
+            "(SELECT registro_id FROM previsoes WHERE registro_id IS NOT NULL)"
+          ),
+        },
+      },
+      raw: true,
+    });
+
+    res.json({
+      status: "sucesso",
+      titulo: "Modelo Treinado com Sucesso",
+      mensagem: "O modelo foi treinado e está pronto para fazer previsões.",
+      detalhes: `Precisão atual: média móvel dos últimos 5 registros (${media.toFixed(
+        2
+      )}°C)`,
+      temNovosRegistros: registrosSemPrevisao.length > 0,
+      quantidadeNovosRegistros: registrosSemPrevisao.length,
+    });
   } catch (err) {
     console.error("Erro ao treinar modelo:", err);
-    res.status(500).json({ erro: "Erro ao treinar modelo" });
+    res.status(500).json({
+      status: "erro",
+      titulo: "Erro Interno",
+      mensagem: "Ocorreu um erro ao tentar treinar o modelo.",
+      detalhes:
+        "Por favor, tente novamente. Se o erro persistir, verifique os logs do servidor.",
+    });
   }
 };
 
@@ -134,15 +177,23 @@ exports.ultimosPorIntervalo = async (req, res) => {
         dataInicio = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
     }
 
-    const dataFormatada = dataInicio
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", " ");
+    const dataInicioFormatada = dataInicio.toISOString().split("T")[0];
+    const horaInicioFormatada = dataInicio.toTimeString().split(" ")[0];
 
     const previsoes = await Previsao.findAll({
-      where: Sequelize.literal(
-        `STR_TO_DATE(CONCAT(data, ' ', hora), '%Y-%m-%d %H:%i:%s') >= '${dataFormatada}'`
-      ),
+      where: {
+        [Op.or]: [
+          {
+            [Op.and]: [
+              { data: dataInicioFormatada },
+              { hora: { [Op.gte]: horaInicioFormatada } },
+            ],
+          },
+          {
+            data: { [Op.gt]: dataInicioFormatada },
+          },
+        ],
+      },
       order: [
         ["data", "ASC"],
         ["hora", "ASC"],
@@ -152,7 +203,8 @@ exports.ultimosPorIntervalo = async (req, res) => {
 
     console.log(
       `PREVISÕES encontradas no intervalo (${intervalo}):`,
-      previsoes.length
+      previsoes.length,
+      `\nData início: ${dataInicioFormatada} ${horaInicioFormatada}`
     );
     res.json(previsoes);
   } catch (error) {

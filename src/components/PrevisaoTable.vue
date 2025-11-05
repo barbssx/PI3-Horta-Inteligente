@@ -27,8 +27,6 @@
 					</tbody>
 				</table>
 			</div>
-
-			<p class="text-muted text-center mt-2">🔹 Cores destacam valores críticos para facilitar a leitura.</p>
 		</div>
 	</div>
 </template>
