@@ -1,21 +1,59 @@
 const express = require("express");
 const router = express.Router();
-const mlController = require("../controllers/mlController");
+let mlController;
+try {
+  mlController = require("../controllers/mlController");
+} catch (err) {
+  console.error("Erro ao carregar controllers/mlController:", err);
+  throw err;
+}
 
-router.post("/treinar", mlController.treinarModelo);
-router.post("/prever", mlController.preverTemperatura);
+function assertHandler(fn, name) {
+  if (typeof fn !== "function") {
+    throw new TypeError(
+      `ML route handler '${name}' is not a function. Received: ${typeof fn}`
+    );
+  }
+  return fn;
+}
 
-// Rotas de Visualização existentes
-router.get("/ultimos", mlController.ultimosComPrevisao);
-router.get("/ultimos-intervalo", mlController.ultimosPorIntervalo);
+router.post(
+  "/treinar",
+  assertHandler(mlController.treinarModelo, "treinarModelo")
+);
+router.post(
+  "/prever",
+  assertHandler(mlController.preverTemperatura, "preverTemperatura")
+);
+
+router.get(
+  "/ultimos",
+  assertHandler(mlController.ultimosComPrevisao, "ultimosComPrevisao")
+);
+router.get(
+  "/ultimos-intervalo",
+  assertHandler(mlController.ultimosPorIntervalo, "ultimosPorIntervalo")
+);
 
 // RMSE
-router.get("/acuracia", mlController.calcularAcuraciaModelo);
+router.get(
+  "/acuracia",
+  assertHandler(mlController.calcularAcuraciaModelo, "calcularAcuraciaModelo")
+);
 
-//  Alertas
-router.get("/anomalias", mlController.verificarAnomalias);
+// Alertas
+router.get(
+  "/anomalias",
+  assertHandler(mlController.verificarAnomalias, "verificarAnomalias")
+);
 
 // Recomendações
-router.get("/comandos-otimizacao", mlController.gerarComandosDeOtimizacao);
+router.get(
+  "/comandos-otimizacao",
+  assertHandler(
+    mlController.gerarComandosDeOtimizacao,
+    "gerarComandosDeOtimizacao"
+  )
+);
 
 module.exports = router;
