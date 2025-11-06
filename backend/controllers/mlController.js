@@ -178,45 +178,43 @@ exports.ultimosPorIntervalo = async (req, res) => {
     }
 
     const dataInicioFormatada = dataInicio.toISOString().split("T")[0];
-    const horaInicioFormatada = dataInicio.toTimeString().split(" ")[0];
+    const dataInicioSQL = dataInicio
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
 
     const previsoes = await Previsao.findAll({
       where: {
         [Op.or]: [
-          {
-            [Op.and]: [
-              { data: dataInicioFormatada },
-              { hora: { [Op.gte]: horaInicioFormatada } },
-            ],
-          },
-          {
-            data: { [Op.gt]: dataInicioFormatada },
-          },
+          { criado_em: { [Op.gte]: dataInicio } },
+          Sequelize.where(
+            Sequelize.literal(
+              "STR_TO_DATE(CONCAT(data, ' ', COALESCE(hora, '00:00:00')), '%Y-%m-%d %H:%i:%s')"
+            ),
+            { [Op.gte]: dataInicioSQL }
+          ),
         ],
       },
-      order: [
-        ["data", "ASC"],
-        ["hora", "ASC"],
-      ],
+      order: [["criado_em", "ASC"]],
       raw: true,
     });
 
     console.log(
       `PREVISÕES encontradas no intervalo (${intervalo}):`,
       previsoes.length,
-      `\nData início: ${dataInicioFormatada} ${horaInicioFormatada}`
+      `\nData início (JS): ${dataInicio.toISOString()}`,
+      `\nData início (SQL): ${dataInicioSQL}`
     );
+
     res.json(previsoes);
-  } catch (error) {
-    console.error("Erro ao buscar previsões por intervalo:", error);
-    res.status(500).json({ erro: "Erro ao buscar previsões por intervalo." });
-  }
-};
 
-exports.verificarAnomalias = async (req, res) => {
-  try {
-    const limiteTolerancia = 3.0;
+    console.log(
+      `PREVISÕES encontradas no intervalo (${intervalo}):`,
+      previsoes.length,
+      `\nData início (JS): ${dataInicio.toISOString()}`
+    );
 
+    res.json(previsoes);
     const ultimasPrevisoes = await Previsao.findAll({
       limit: 10,
       order: [["id", "DESC"]],

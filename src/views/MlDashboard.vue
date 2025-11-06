@@ -2,35 +2,39 @@
 	<div class="container py-4">
 		<header class="text-center">
 			<h2 class="mb-4 display-6 fw-bold text-primary">🌿 Painel de Previsões</h2>
+			<p class="page-desc mx-auto mb-3">
+				Monitoramento e controle preditivo do processo de compostagem. Treine o modelo, gere previsões e receba recomendações para otimizar temperatura e umidade.
+			</p>
 		</header>
 
-		<section class="actions-bar mb-4">
-			<div class="d-flex justify-content-center flex-wrap gap-2">
-				<button class="btn btn-primary shadow-sm" @click="treinarModelo">🧠 Treinar Modelo</button>
-				<button class="btn btn-success shadow-sm" @click="gerarPrevisoes">📈 Gerar Previsões</button>
-				<button class="btn btn-outline-secondary shadow-sm" @click="buscarPrevisoes">🔄 Atualizar</button>
+		<section class="control-bar mb-3">
+			<div class="controls-left">
+				<div class="action-toolbar">
+					<button class="btn btn-primary" @click="treinarModelo">🧠 Treinar Modelo</button>
+					<button class="btn btn-success" @click="gerarPrevisoes">📈 Gerar Previsões</button>
+					<button class="btn btn-outline-secondary" @click="buscarPrevisoes">🔄 Atualizar</button>
+				</div>
 			</div>
-		</section>
-
-		<section class="interval-selector text-center mb-4">
-			<ul class="nav nav-pills justify-content-center flex-wrap">
-				<li class="nav-item" v-for="(label, key) in intervalos" :key="key">
-					<button class="nav-link" :class="{ active: intervaloSelecionado === key }" @click="alterarIntervalo(key)">
-						{{ label }}
-					</button>
-				</li>
-			</ul>
+			<div class="controls-right">
+				<ul class="nav nav-pills interval-pills">
+					<li class="nav-item" v-for="(label, key) in intervalos" :key="key">
+						<button class="nav-link" :class="{ active: intervaloSelecionado === key }" @click="alterarIntervalo(key)">
+							{{ label }}
+						</button>
+					</li>
+				</ul>
+			</div>
 		</section>
 
 		<section class="alerts-area mb-4">
 			<div v-if="comandosOtimizacao?.comandos?.length" class="alert alert-danger shadow-sm d-flex align-items-center gap-3" role="alert">
-				<h4 class="alert-heading mb-0">🚨 AÇÃO URGENTE NECESSÁRIA</h4>
+				<div class="me-3">
+					<span class="fs-4">🚨</span>
+				</div>
 				<div>
-					<p class="mb-1 fw-bold">
-						{{ comandosOtimizacao.comandos[0].acao }}
-						({{ comandosOtimizacao.comandos[0].prioridade }})
-					</p>
-					<small>{{ comandosOtimizacao.comandos[0].justificativa }}</small>
+					<h5 class="mb-1">AÇÃO URGENTE NECESSÁRIA</h5>
+					<p class="mb-0 fw-bold">{{ comandosOtimizacao.comandos[0].acao }} ({{ comandosOtimizacao.comandos[0].prioridade }})</p>
+					<small class="text-muted">{{ comandosOtimizacao.comandos[0].justificativa }}</small>
 				</div>
 			</div>
 			<div v-else-if="comandosOtimizacao?.mensagem && !loading" class="alert alert-success shadow-sm text-center">✅ {{ comandosOtimizacao.mensagem }}</div>
@@ -38,7 +42,7 @@
 
 		<section v-if="loading" class="loading-state text-center text-muted py-5">
 			<div class="spinner-border" role="status"></div>
-			<p class="mt-2">Carregando dados de inteligência...</p>
+			<p class="mt-2">Carregando dados...</p>
 		</section>
 
 		<section v-else-if="!previsoes.length" class="empty-state">
@@ -98,6 +102,21 @@
 				</div>
 			</section>
 		</main>
+
+		<div class="modal fade" id="mlResultModal" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">{{ mlModalTitle }}</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+					</div>
+					<div class="modal-body" v-html="mlModalBody"></div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -128,6 +147,9 @@ export default {
 				"1d": "Último Dia",
 				"1w": "Última Semana",
 			},
+			mlModalTitle: "",
+			mlModalBody: "",
+			mlModalInstance: null,
 		};
 	},
 
@@ -210,23 +232,51 @@ export default {
 
 		async treinarModelo() {
 			try {
-				await axios.post(`${API_URL}/ml/treinar`);
-				alert("Modelo treinado com sucesso!");
+				const resTrain = await axios.post(`${API_URL}/ml/treinar`);
+				const trainMsg = resTrain.data?.mensagem || "Modelo treinado com sucesso!";
+
 				await this.buscarAcuracia();
-				await this.gerarPrevisoes();
-			} catch {
-				alert("Erro ao treinar modelo.");
+
+				const resPrevisao = await this.gerarPrevisoes();
+
+				let body = `<p><strong>Treinamento:</strong> ${trainMsg}</p>`;
+				if (!resPrevisao) {
+					body += `<p><strong>Previsões:</strong> Nenhuma resposta do servidor.</p>`;
+				} else if (resPrevisao.error) {
+					body += `<p><strong>Previsões:</strong> Erro ao gerar previsões: ${resPrevisao.mensagem || resPrevisao.error}</p>`;
+				} else {
+					body += `<p><strong>Previsões:</strong> ${resPrevisao.mensagem || JSON.stringify(resPrevisao)}</p>`;
+				}
+
+				this.showMlModal("Resultado do Treinamento e Previsões", body);
+			} catch (err) {
+				const errMsg = err.response?.data?.erro || err.message || "Erro ao treinar modelo.";
+				this.showMlModal("Erro no Treinamento", `<p>${errMsg}</p>`);
 			}
 		},
 
 		async gerarPrevisoes() {
 			try {
 				const res = await axios.post(`${API_URL}/ml/prever`);
-				alert(res.data.mensagem || "Previsões geradas com sucesso!");
 				this.buscarPrevisoes();
-			} catch {
-				alert("Erro ao gerar previsões.");
+				return res.data;
+			} catch (err) {
+				const mensagem = err.response?.data?.erro || "Erro ao gerar previsões.";
+				return { error: true, mensagem };
 			}
+		},
+
+		showMlModal(title, bodyHtml) {
+			this.mlModalTitle = title;
+			this.mlModalBody = bodyHtml;
+
+			this.$nextTick(() => {
+				const modalEl = document.getElementById("mlResultModal");
+				if (!modalEl) return;
+				if (!this.mlModalInstance) this.mlModalInstance = new bootstrap.Modal(modalEl);
+				modalEl.querySelector(".modal-body").innerHTML = bodyHtml;
+				this.mlModalInstance.show();
+			});
 		},
 
 		verificarAlertas() {
@@ -241,34 +291,160 @@ export default {
 </script>
 
 <style scoped>
+/* Layout container mais estreito para melhor leitura */
+.container {
+	max-width: 1100px;
+}
+
+/* Ações principais (botões) — agrupados e consistentes */
+.actions-bar {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 0.75rem;
+}
+.actions-bar .btn {
+	min-width: 160px;
+	padding: 0.6rem 1rem;
+	margin: 0.25rem;
+	border-radius: 12px;
+	box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+/* Seletor de intervalo separado visualmente */
+.interval-selector {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 1rem;
+}
+.interval-selector .nav {
+	background: #ffffff;
+	padding: 0.35rem;
+	border-radius: 999px;
+	box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+/* Nova barra de controle: agrupa ações e seletor */
+.control-bar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+.controls-left .action-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.controls-right {
+	display: flex;
+	justify-content: flex-end;
+}
+.interval-pills {
+	background: #fff;
+	padding: 0.35rem;
+	border-radius: 999px;
+	box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+@media (max-width: 768px) {
+	.control-bar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.controls-right {
+		justify-content: center;
+		margin-top: 0.5rem;
+	}
+	.controls-left .action-toolbar {
+		justify-content: center;
+	}
+}
+
+/* Alerts agrupadas abaixo do seletor para não quebrar a linha de ações */
+.alerts-area {
+	max-width: 920px;
+	margin: 0.5rem auto 1.25rem;
+}
+.alerts-area .alert {
+	border-radius: 12px;
+	padding: 0.9rem 1rem;
+	margin-bottom: 0;
+}
+
+/* Tabs e conteúdo */
+.content-tabs {
+	margin-bottom: 0.75rem;
+}
 .nav-pills .nav-link,
 .nav-tabs .nav-link {
 	border-radius: 20px;
-	padding: 0.5rem 1.3rem;
-	margin: 0.3rem;
-	transition: all 0.2s ease;
-	font-weight: 500;
+	padding: 0.45rem 1.1rem;
+	margin: 0.25rem;
+	transition: all 0.16s ease;
+	font-weight: 600;
+	color: #334155;
 }
 .nav-pills .nav-link.active,
 .nav-tabs .nav-link.active {
-	background-color: #007bff;
-	color: white;
-	box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+	background-color: #0d6efd;
+	color: white !important;
+	box-shadow: 0 6px 18px rgba(13, 110, 253, 0.18);
 }
 .nav-pills .nav-link:hover,
 .nav-tabs .nav-link:hover {
-	background-color: #e7f1ff;
+	background-color: #e9f2ff;
 }
+
+/* Estados: loading / vazio */
+.loading-state,
+.empty-state {
+	padding: 2rem 1rem;
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+	margin-bottom: 1rem;
+}
+
+/* Ajustes para o main e cartões */
+main {
+	background: transparent;
+}
+.tab-content {
+	padding-top: 0.5rem;
+}
+
+/* Modal mais leve */
+.modal-content {
+	border-radius: 12px;
+	overflow: hidden;
+}
+.modal-header {
+	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.modal-body p {
+	margin: 0.25rem 0;
+}
+
+.page-desc {
+	max-width: 820px;
+	color: #586b7a;
+	font-size: 0.98rem;
+}
+
+/* Pequeños refinamentos nas cores de alerta */
 .alert-danger {
-	border-left: 5px solid #dc3545;
+	border-left: 4px solid #dc3545;
+	background: linear-gradient(90deg, rgba(255, 243, 244, 0.6), rgba(255, 255, 255, 0.02));
 }
 .alert-success {
-	border-left: 5px solid #28a745;
+	border-left: 4px solid #28a745;
 }
-.alert-warning {
-	border-left: 5px solid #ffc107;
+.alert-info {
+	border-left: 4px solid #17a2b8;
 }
-.btn {
-	border-radius: 10px;
+
+.btn-close {
+	filter: grayscale(0.2);
 }
 </style>
