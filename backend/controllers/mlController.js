@@ -207,14 +207,17 @@ exports.ultimosPorIntervalo = async (req, res) => {
     );
 
     res.json(previsoes);
+    return;
+  } catch (err) {
+    console.error("Erro ao verificar anomalias:", err);
+    res.status(500).json({ erro: "Erro ao verificar anomalias." });
+  }
+};
 
-    console.log(
-      `PREVISÕES encontradas no intervalo (${intervalo}):`,
-      previsoes.length,
-      `\nData início (JS): ${dataInicio.toISOString()}`
-    );
+exports.verificarAnomalias = async (req, res) => {
+  try {
+    const limiteTolerancia = 3.0;
 
-    res.json(previsoes);
     const ultimasPrevisoes = await Previsao.findAll({
       limit: 10,
       order: [["id", "DESC"]],
