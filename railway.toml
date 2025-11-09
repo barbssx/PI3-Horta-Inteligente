@@ -1,22 +1,8 @@
-[build][build]
-
-builder = "Dockerfile"builder = "Dockerfile"
-
-dockerfilePath = "backend/Dockerfile"dockerfilePath = "Dockerfile"
-
-watchPaths = ["**"]
+[build]
+builder = "Dockerfile"
+dockerfilePath = "backend/Dockerfile"
 
 [deploy]
-
-startCommand = "node server.js"[deploy]
-
-healthcheckPath = "/health"healthcheckPath = "/health"
-
-restartPolicyType = "on_failure"restartPolicyType = "on_failure"
-
-numReplicas = 1
-
-[env]
-PORT = "3000"
-NODE_ENV = "production"
-NPM_CONFIG_PRODUCTION = "true"
+startCommand = "node server.js"
+healthcheckPath = "/health"
+restartPolicyType = "on_failure"
