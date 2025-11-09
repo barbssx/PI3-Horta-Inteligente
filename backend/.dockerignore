@@ -1,9 +1,0 @@
-node_modules
-.git
-.env
-*.log
-venv
-__pycache__
-.pytest_cache
-uploads/*
-!uploads/.gitkeep

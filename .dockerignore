@@ -1,9 +1,0 @@
-backend/node_modules
-backend/.env
-backend/*.log
-backend/venv
-backend/__pycache__
-backend/.pytest_cache
-backend/uploads/*
-!backend/uploads/.gitkeep
-.git
