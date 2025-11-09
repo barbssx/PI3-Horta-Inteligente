@@ -1,24 +1,28 @@
-# Usa imagem base do Node
+# 1. Usa imagem base do Node
 FROM node:18
 
-# Define o diretório de trabalho
+# 2. Define o diretório de trabalho
 WORKDIR /app
 
-# Copia apenas os arquivos de dependências do Node
-COPY package*.json ./
+# 3. Instala as dependências do sistema (Python) de uma vez
+RUN apt-get update && apt-get install -y python3 python3-pip
 
-# Instala as dependências do Node.js
+# 4. Copia os arquivos de dependências do Node E do Python
+# (Assumindo que package.json E requirements.txt estão na raiz)
+COPY package*.json ./
+COPY requirements.txt ./
+
+# 5. Instala as dependências do Node.js
 RUN npm install
 
-# Copia todo o restante do código do backend
+# 6. Instala as dependências do Python
+RUN pip3 install -r requirements.txt
+
+# 7. Copia todo o restante do código do backend
 COPY . .
 
-# Instala Python e dependências
-RUN apt-get update && apt-get install -y python3 python3-pip
-RUN pip3 install -r python/requirements.txt || echo "Sem requirements.txt"
-
-# Expõe a porta padrão
+# 8. Expõe a porta padrão
 EXPOSE 3000
 
-# Comando para iniciar o servidor
+# 9. Comando para iniciar o servidor
 CMD ["node", "server.js"]
