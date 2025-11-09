@@ -29,7 +29,6 @@ ENV/
 temp_data.json
 *.sqlite3
 
-
 # =========================
 # ENVIRONMENT FILES
 # =========================

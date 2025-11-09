@@ -2,7 +2,14 @@
 builder = "NIXPACKS"
 
 [phases.setup]
-nixPkgs = ["nodejs", "python3"]
+# instala Node e Python juntos
+nixPkgs = ["nodejs", "python3", "gcc"]
+
+[phases.install]
+cmds = [
+  "npm install",
+  "python3 -m venv /opt/venv && . /opt/venv/bin/activate && pip install -r requirements.txt || echo 'Sem dependências Python'"
+]
 
 [start]
 cmd = "npm start"

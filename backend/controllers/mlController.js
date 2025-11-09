@@ -27,7 +27,7 @@ exports.treinarModelo = async (req, res) => {
     const pythonCmd = process.platform === "win32" ? "python" : "python3";
 
     const pythonProcess = spawn(pythonCmd, [
-      path.join(__dirname, "..", "treinar_modelo.py"),
+      path.join(__dirname, "python", "treinar_modelo.py"),
     ]);
 
     let pythonOutput = "";
