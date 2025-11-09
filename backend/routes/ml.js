@@ -35,19 +35,14 @@ router.get(
   assertHandler(mlController.ultimosPorIntervalo, "ultimosPorIntervalo")
 );
 
-// RMSE
 router.get(
   "/acuracia",
   assertHandler(mlController.calcularAcuraciaModelo, "calcularAcuraciaModelo")
 );
-
-// Alertas
 router.get(
   "/anomalias",
   assertHandler(mlController.verificarAnomalias, "verificarAnomalias")
 );
-
-// Recomendações
 router.get(
   "/comandos-otimizacao",
   assertHandler(

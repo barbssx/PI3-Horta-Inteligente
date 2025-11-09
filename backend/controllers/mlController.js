@@ -2,73 +2,101 @@ const { Sequelize, Op } = require("sequelize");
 const Registro = require("../models/Registro");
 const Previsao = require("../models/Previsao");
 
+const { spawn } = require("child_process");
+const fs = require("fs");
+const path = require("path");
+
 exports.treinarModelo = async (req, res) => {
   try {
     const registros = await Registro.findAll({
-      order: [["data", "ASC"]],
+      attributes: ["t_com", "t_amb", "u_amb"],
       raw: true,
     });
-
-    console.log("Registros encontrados para treinar:", registros.length);
-
-    if (!registros.length) {
-      return res.status(400).json({
-        status: "erro",
-        titulo: "Erro ao Treinar Modelo",
-        mensagem:
-          "Não há dados disponíveis para treinar o modelo. Faça o upload de alguns registros primeiro.",
-        detalhes:
-          "O treinamento requer dados históricos de temperatura e umidade.",
-      });
-    }
 
     if (registros.length < 5) {
       return res.status(400).json({
         status: "erro",
         titulo: "Dados Insuficientes",
-        mensagem:
-          "São necessários pelo menos 5 registros para treinar o modelo.",
-        detalhes: `Atualmente há apenas ${registros.length} registro(s).`,
+        mensagem: `São necessários pelo menos 5 registros para treinar. (Atual: ${registros.length})`,
       });
     }
 
-    const ultimos = registros.slice(-5);
-    const soma = ultimos.reduce((acc, r) => acc + (r.t_com || 0), 0);
-    const media = soma / ultimos.length;
+    const tempFilePath = path.join(__dirname, "..", "temp_data.json");
+    fs.writeFileSync(tempFilePath, JSON.stringify(registros));
 
-    global.modeloTemp = { media };
+    const pythonCmd = process.platform === "win32" ? "python" : "python3";
 
-    console.log("Modelo treinado. Média dos últimos 5 registros:", media);
+    const pythonProcess = spawn(pythonCmd, [
+      path.join(__dirname, "..", "treinar_modelo.py"),
+    ]);
 
-    const registrosSemPrevisao = await Registro.findAll({
-      where: {
-        id: {
-          [Sequelize.Op.notIn]: Sequelize.literal(
-            "(SELECT registro_id FROM previsoes WHERE registro_id IS NOT NULL)"
-          ),
-        },
-      },
-      raw: true,
+    let pythonOutput = "";
+    let pythonError = "";
+
+    pythonProcess.stdout.on("data", (data) => {
+      pythonOutput += data.toString();
     });
 
-    res.json({
-      status: "sucesso",
-      titulo: "Modelo Treinado com Sucesso",
-      mensagem: "O modelo foi treinado e está pronto para fazer previsões.",
-      detalhes: `Precisão atual: média móvel dos últimos 5 registros (${media.toFixed(
-        2
-      )}°C)`,
-      temNovosRegistros: registrosSemPrevisao.length > 0,
-      quantidadeNovosRegistros: registrosSemPrevisao.length,
+    pythonProcess.stderr.on("data", (data) => {
+      pythonError += data.toString();
+    });
+
+    pythonProcess.on("close", async () => {
+      try {
+        fs.unlinkSync(tempFilePath);
+      } catch (err) {
+        console.warn("Não foi possível excluir o arquivo temporário:", err);
+      }
+
+      if (pythonError || pythonOutput.startsWith("ERRO:")) {
+        console.error("Erro do Python:", pythonError || pythonOutput);
+        return res.status(500).json({
+          status: "erro",
+          titulo: "Erro ao Treinar Modelo (Python)",
+          mensagem: "O script de Machine Learning falhou.",
+          detalhes: pythonError || pythonOutput,
+        });
+      }
+
+      const [coef_T_Amb, coef_U_Amb, intercept_] = pythonOutput
+        .trim()
+        .split(",")
+        .map(Number);
+
+      global.modeloTemp = { coef_T_Amb, coef_U_Amb, intercept_ };
+      console.log("Modelo (Regressão Linear) ATUALIZADO:", global.modeloTemp);
+
+      const registrosSemPrevisao = await Registro.findAll({
+        where: {
+          id: {
+            [Op.notIn]: Sequelize.literal(
+              "(SELECT id_registro FROM Previsoes)"
+            ),
+          },
+        },
+        raw: true,
+      });
+
+      res.json({
+        status: "sucesso",
+        titulo: "Modelo Treinado com Sucesso",
+        mensagem: `Modelo de Regressão Linear (re)treinado com ${registros.length} registros.`,
+        detalhes: `Fórmula: T_Comp = (${coef_T_Amb.toFixed(
+          2
+        )} * T_Amb) + (${coef_U_Amb.toFixed(2)} * U_Amb) + ${intercept_.toFixed(
+          2
+        )}`,
+        temNovosRegistros: registrosSemPrevisao.length > 0,
+        quantidadeNovosRegistros: registrosSemPrevisao.length,
+      });
     });
   } catch (err) {
-    console.error("Erro ao treinar modelo:", err);
+    console.error("Erro no processo de treinamento (Node.js):", err);
     res.status(500).json({
       status: "erro",
-      titulo: "Erro Interno",
-      mensagem: "Ocorreu um erro ao tentar treinar o modelo.",
-      detalhes:
-        "Por favor, tente novamente. Se o erro persistir, verifique os logs do servidor.",
+      titulo: "Erro Interno (Node.js)",
+      mensagem: "Ocorreu um erro ao tentar acionar o script de treinamento.",
+      detalhes: err.message,
     });
   }
 };

@@ -10,9 +10,44 @@
 		<section class="control-bar mb-3">
 			<div class="controls-left">
 				<div class="action-toolbar">
-					<button class="btn btn-primary" @click="treinarModelo">🧠 Treinar Modelo</button>
-					<button class="btn btn-success" @click="gerarPrevisoes">📈 Gerar Previsões</button>
-					<button class="btn btn-outline-secondary" @click="buscarPrevisoes">🔄 Atualizar</button>
+					<button
+						class="btn btn-primary"
+						@click="treinarModelo"
+						data-bs-toggle="tooltip"
+						data-bs-placement="top"
+						:title="`Ensina o modelo com os dados históricos. RMSE atual: ${rmse || 'N/A'}`"
+					>
+						🧠 Treinar Modelo
+					</button>
+					<button
+						class="btn btn-success"
+						@click="gerarPrevisoes"
+						data-bs-toggle="tooltip"
+						data-bs-placement="top"
+						title="Faz previsões para os próximos intervalos usando o modelo atual"
+					>
+						📈 Gerar Previsões
+					</button>
+					<button
+						class="btn btn-outline-secondary btn-update"
+						@click="buscarPrevisoes"
+						data-bs-toggle="tooltip"
+						data-bs-placement="top"
+						title="Recarrega os dados e atualiza a tela"
+					>
+						🔄 Atualizar
+					</button>
+					<button
+						type="button"
+						class="btn-help ms-1"
+						@click="showHelpModal"
+						data-bs-toggle="tooltip"
+						data-bs-placement="top"
+						:title="helpTooltip"
+						aria-label="Ajuda"
+					>
+						?
+					</button>
 				</div>
 			</div>
 			<div class="controls-right">
@@ -98,7 +133,7 @@
 				</div>
 
 				<div v-if="abaSelecionada === 'table'">
-					<PrevisaoTable :previsoes="previsoes" />
+					<PrevisaoTable :previsoes="previsoes" :rmse="rmse" />
 				</div>
 			</section>
 		</main>
@@ -111,6 +146,37 @@
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 					</div>
 					<div class="modal-body" v-html="mlModalBody"></div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="mlHelpModal" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header modal-header-help">
+						<h5 class="modal-title">🌿 O que significa cada botão?</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+					</div>
+					<div class="modal-body">
+						<p><strong>Treinar Modelo</strong></p>
+						<p>
+							Este botão "Treinar Modelo" faz com que o sistema aprenda com os dados históricos já coletados. É como mostrar muitos exemplos para o
+							computador e assim ele ajusta seus cálculos para entender melhor a relação entre temperatura, umidade e o comportamento da composteira.
+						</p>
+						<p><strong>Gerar Previsões</strong></p>
+						<p>
+							Depois que o modelo foi treinado, ao clicar em "Gerar Previsões" o sistema estima como estarão a temperatura e a umidade nos próximos
+							períodos. Essas previsões ajudam a identificar problemas antes de aparecerem e a planejar ações (por exemplo, regar ou arejar).
+						</p>
+						<p><strong>Atualizar</strong></p>
+						<p>
+							O botão "Atualizar" recarrega os dados do servidor e atualiza a tela. Use quando quiser ver as previsões e medições mais recentes sem treinar
+							ou gerar novamente.
+						</p>
+					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
 					</div>
@@ -150,6 +216,8 @@ export default {
 			mlModalTitle: "",
 			mlModalBody: "",
 			mlModalInstance: null,
+			mlHelpModalInstance: null,
+			helpTooltip: "Ajuda sobre o funcionamento dos botões de ML",
 		};
 	},
 
@@ -279,6 +347,15 @@ export default {
 			});
 		},
 
+		showHelpModal() {
+			this.$nextTick(() => {
+				const modalEl = document.getElementById("mlHelpModal");
+				if (!modalEl) return;
+				if (!this.mlHelpModalInstance) this.mlHelpModalInstance = new bootstrap.Modal(modalEl);
+				this.mlHelpModalInstance.show();
+			});
+		},
+
 		verificarAlertas() {
 			this.alertas = [];
 		},
@@ -291,26 +368,92 @@ export default {
 </script>
 
 <style scoped>
-/* Layout container mais estreito para melhor leitura */
 .container {
-	max-width: 1100px;
+	max-width: 1200px;
+	padding: 1.5rem;
 }
 
-/* Ações principais (botões) — agrupados e consistentes */
+header {
+	background: linear-gradient(120deg, #f8f9fa, #e9ecef);
+	padding: 2rem 1rem;
+	border-radius: 20px;
+	margin-bottom: 2rem;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+header h2 {
+	background: linear-gradient(45deg, #2e7d32, #4caf50);
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	font-size: 2.2rem;
+	margin-bottom: 1rem;
+}
+
+.btn-help {
+	width: 26px;
+	height: 26px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.9rem;
+	line-height: 1;
+	padding: 0;
+	border-radius: 4px;
+	border: 1px solid rgba(46, 125, 50, 0.12);
+	background: transparent;
+	color: #2e7d32;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.btn-help:hover {
+	background: #e9f6e9;
+	border-color: rgba(46, 125, 50, 0.2);
+}
+
+.btn-help:focus {
+	outline: 2px solid rgba(46, 125, 50, 0.18);
+}
+
 .actions-bar {
 	display: flex;
 	justify-content: center;
-	margin-bottom: 0.75rem;
-}
-.actions-bar .btn {
-	min-width: 160px;
-	padding: 0.6rem 1rem;
-	margin: 0.25rem;
-	border-radius: 12px;
-	box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+	margin-bottom: 1rem;
 }
 
-/* Seletor de intervalo separado visualmente */
+.btn {
+	min-width: 160px;
+	padding: 0.7rem 1.2rem;
+	margin: 0.25rem;
+	border-radius: 12px;
+	transition: all 0.3s ease;
+	font-weight: 500;
+	letter-spacing: 0.3px;
+}
+
+.btn-primary {
+	background: linear-gradient(45deg, #2e7d32, #4caf50);
+	border: none;
+	box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+}
+
+.btn-primary:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+}
+
+.btn-success {
+	background: linear-gradient(45deg, #1b5e20, #388e3c);
+	border: none;
+	box-shadow: 0 4px 15px rgba(27, 94, 32, 0.2);
+}
+
+.btn-success:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(27, 94, 32, 0.3);
+}
+
 .interval-selector {
 	display: flex;
 	justify-content: center;
@@ -323,7 +466,6 @@ export default {
 	box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
 
-/* Nova barra de controle: agrupa ações e seletor */
 .control-bar {
 	display: flex;
 	justify-content: space-between;
@@ -335,6 +477,7 @@ export default {
 	display: flex;
 	gap: 0.5rem;
 	flex-wrap: wrap;
+	align-items: center;
 }
 .controls-right {
 	display: flex;
@@ -361,7 +504,6 @@ export default {
 	}
 }
 
-/* Alerts agrupadas abaixo do seletor para não quebrar a linha de ações */
 .alerts-area {
 	max-width: 920px;
 	margin: 0.5rem auto 1.25rem;
@@ -372,58 +514,167 @@ export default {
 	margin-bottom: 0;
 }
 
-/* Tabs e conteúdo */
 .content-tabs {
-	margin-bottom: 0.75rem;
-}
-.nav-pills .nav-link,
-.nav-tabs .nav-link {
-	border-radius: 20px;
-	padding: 0.45rem 1.1rem;
-	margin: 0.25rem;
-	transition: all 0.16s ease;
-	font-weight: 600;
-	color: #334155;
-}
-.nav-pills .nav-link.active,
-.nav-tabs .nav-link.active {
-	background-color: #0d6efd;
-	color: white !important;
-	box-shadow: 0 6px 18px rgba(13, 110, 253, 0.18);
-}
-.nav-pills .nav-link:hover,
-.nav-tabs .nav-link:hover {
-	background-color: #e9f2ff;
+	margin-bottom: 1.5rem;
+	border-bottom: none;
 }
 
-/* Estados: loading / vazio */
+.nav-tabs {
+	border: none;
+	background: #f8f9fa;
+	padding: 0.5rem;
+	border-radius: 15px;
+	gap: 0.5rem;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.nav-pills .nav-link,
+.nav-tabs .nav-link {
+	border-radius: 12px;
+	padding: 0.6rem 1.2rem;
+	margin: 0;
+	transition: all 0.3s ease;
+	font-weight: 500;
+	color: #475569;
+	border: none;
+	background: transparent;
+}
+
+.nav-pills .nav-link.active,
+.nav-tabs .nav-link.active {
+	background: linear-gradient(45deg, #2e7d32, #4caf50);
+	color: white !important;
+	box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+}
+
+.nav-pills .nav-link:hover,
+.nav-tabs .nav-link:hover {
+	background-color: #f1f8e9;
+	color: #2e7d32;
+	transform: translateY(-1px);
+}
+
+.tab-content {
+	padding: 1.5rem 0;
+}
+
 .loading-state,
 .empty-state {
-	padding: 2rem 1rem;
-	background: #fff;
-	border-radius: 12px;
+	padding: 3rem 1.5rem;
+	background: linear-gradient(120deg, #f8f9fa, #fff);
+	border-radius: 16px;
 	box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+	margin-bottom: 1.5rem;
+	text-align: center;
+}
+
+.loading-state .spinner-border {
+	color: #2e7d32;
 	margin-bottom: 1rem;
 }
 
-/* Ajustes para o main e cartões */
+.empty-state .alert {
+	max-width: 600px;
+	margin: 0 auto;
+}
+
 main {
 	background: transparent;
 }
-.tab-content {
-	padding-top: 0.5rem;
+
+.row.g-3 {
+	margin: -0.75rem;
 }
 
-/* Modal mais leve */
-.modal-content {
-	border-radius: 12px;
-	overflow: hidden;
+.row.g-3 > div {
+	padding: 0.75rem;
 }
+
+:deep(.metric-card) {
+	background: white;
+	border-radius: 16px;
+	padding: 1.5rem;
+	height: 100%;
+	transition: all 0.3s ease;
+	border: 1px solid rgba(0, 0, 0, 0.05);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+:deep(.metric-card:hover) {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+}
+
+:deep(.metric-card .card-title) {
+	color: #475569;
+	font-size: 0.9rem;
+	font-weight: 600;
+	margin-bottom: 0.75rem;
+}
+
+:deep(.metric-card .metric-value) {
+	font-size: 2rem;
+	font-weight: 700;
+	color: #0f172a;
+	margin-bottom: 0.5rem;
+}
+
+.modal-content {
+	border-radius: 16px;
+	overflow: hidden;
+	border: none;
+	box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
 .modal-header {
 	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+	background: #f8f9fa;
+}
+
+.modal-header-help {
+	background: linear-gradient(90deg, #2e7d32, #4caf50);
+	color: #fff;
+}
+.modal-header-help .modal-title {
+	color: #fff;
+	font-weight: 700;
+}
+.modal-header-help .btn-close {
+	filter: invert(1) opacity(0.85);
+}
+.modal-body {
+	background: linear-gradient(180deg, #ffffff, #f7fff7);
 }
 .modal-body p {
-	margin: 0.25rem 0;
+	margin: 0.6rem 0;
+	line-height: 1.45;
+}
+.modal-body p strong {
+	color: #2e7d32;
+	display: block;
+	margin-bottom: 0.25rem;
+}
+.modal-footer .btn-secondary {
+	background: #f1f5f1;
+	border: 1px solid rgba(46, 125, 50, 0.12);
+	color: #2e7d32;
+}
+.modal-footer .btn-secondary:hover {
+	background: #e9f6e9;
+}
+
+.modal-body {
+	padding: 1.5rem;
+}
+
+.modal-body p {
+	margin: 0.5rem 0;
+	line-height: 1.6;
+}
+
+.modal-footer {
+	border-top: 1px solid rgba(0, 0, 0, 0.06);
+	padding: 1rem 1.5rem;
 }
 
 .page-desc {
@@ -431,8 +682,6 @@ main {
 	color: #586b7a;
 	font-size: 0.98rem;
 }
-
-/* Pequeños refinamentos nas cores de alerta */
 .alert-danger {
 	border-left: 4px solid #dc3545;
 	background: linear-gradient(90deg, rgba(255, 243, 244, 0.6), rgba(255, 255, 255, 0.02));
@@ -446,5 +695,17 @@ main {
 
 .btn-close {
 	filter: grayscale(0.2);
+}
+
+.btn-update {
+	transition: all 0.2s ease;
+}
+.btn-update:hover {
+	background: #e9f6e9;
+	border-color: rgba(46, 125, 50, 0.2) !important;
+	color: #2e7d32;
+}
+.btn-update:focus {
+	outline: 2px solid rgba(46, 125, 50, 0.18);
 }
 </style>

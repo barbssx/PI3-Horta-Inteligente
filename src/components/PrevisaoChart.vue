@@ -112,14 +112,14 @@ export default {
 						splitArea: {
 							show: true,
 							areaStyle: {
-								color: ["#e6f0ff", "#fff"],
+								color: ["#eef7ee", "#ffffff"],
 							},
 						},
 						markArea: {
 							silent: true,
 							data: [
-								[{ yAxis: 40, itemStyle: { color: "rgba(255,0,0,0.08)" } }, { yAxis: 75 }],
-								[{ yAxis: 0, itemStyle: { color: "rgba(0,123,255,0.08)" } }, { yAxis: 10 }],
+								[{ yAxis: 40, itemStyle: { color: "rgba(188, 245, 208, 0.18)" } }, { yAxis: 75 }],
+								[{ yAxis: 0, itemStyle: { color: "rgba(232, 245, 233, 0.08)" } }, { yAxis: 10 }],
 							],
 						},
 					},
@@ -142,8 +142,8 @@ export default {
 						data: tempReal,
 						smooth: true,
 						yAxisIndex: 0,
-						lineStyle: { color: "#FF5733", width: 3 },
-						itemStyle: { color: "#FF5733" },
+						lineStyle: { color: "#2e7d32", width: 3 },
+						itemStyle: { color: "#2e7d32" },
 						symbol: "circle",
 						symbolSize: 4,
 					},
@@ -153,8 +153,8 @@ export default {
 						data: tempPrev,
 						smooth: true,
 						yAxisIndex: 0,
-						lineStyle: { color: "#FFC300", width: 3, type: "dashed" },
-						itemStyle: { color: "#FFC300" },
+						lineStyle: { color: "#4caf50", width: 3, type: "dashed" },
+						itemStyle: { color: "#4caf50" },
 						symbol: "none",
 					},
 					{
@@ -163,8 +163,8 @@ export default {
 						data: umiReal,
 						smooth: true,
 						yAxisIndex: 1,
-						lineStyle: { color: "#3498DB", width: 3 },
-						itemStyle: { color: "#3498DB" },
+						lineStyle: { color: "#1b5e20", width: 3 },
+						itemStyle: { color: "#1b5e20" },
 						symbol: "circle",
 						symbolSize: 4,
 					},
@@ -174,8 +174,8 @@ export default {
 						data: umiPrev,
 						smooth: true,
 						yAxisIndex: 1,
-						lineStyle: { color: "#2ECC71", width: 3, type: "dashed" },
-						itemStyle: { color: "#2ECC71" },
+						lineStyle: { color: "#81c784", width: 3, type: "dashed" },
+						itemStyle: { color: "#81c784" },
 						symbol: "none",
 					},
 				],
@@ -193,6 +193,6 @@ export default {
 	transition: box-shadow 0.3s ease;
 }
 .card:hover {
-	box-shadow: 0 0 15px rgba(0, 123, 255, 0.2);
+	box-shadow: 0 0 18px rgba(46, 125, 50, 0.12);
 }
 </style>

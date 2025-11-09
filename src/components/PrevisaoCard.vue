@@ -162,67 +162,69 @@ export default {
 	justify-content: flex-start;
 }
 .previsao-card:hover {
-	transform: translateY(-5px);
-	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+	transform: translateY(-6px);
+	box-shadow: 0 12px 30px rgba(46, 125, 50, 0.12);
 }
 .icon {
-	font-size: 3rem;
+	font-size: 2.6rem;
 }
 .title {
-	font-weight: 600;
-	font-size: 1.15rem;
+	font-weight: 700;
+	font-size: 1.05rem;
+	color: #234d20;
 }
 .valor-real {
-	color: #0d3b66;
-	font-weight: 600;
+	color: #0f172a;
+	font-weight: 700;
+	font-size: 1.8rem;
 }
 .valor-real small {
 	vertical-align: top;
-	font-weight: 500;
-	margin-left: 4px;
-	font-size: 1.1rem;
+	font-weight: 600;
+	margin-left: 6px;
+	font-size: 1rem;
 	color: #333;
 }
 .valor-prev {
-	color: #ff6b6b;
+	color: #4caf50;
+	font-weight: 700;
+}
+.status-indicator {
+	font-size: 0.9rem;
 	font-weight: 600;
+	color: #2e7d32;
+}
+.tendencia {
+	font-size: 0.9rem;
+	color: #475569;
+}
+.text-muted {
+	font-size: 0.8rem;
 }
 .card-temp {
-	background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+	background: linear-gradient(135deg, rgba(46, 125, 50, 0.08), rgba(76, 175, 80, 0.06));
 }
 .card-prev {
-	background: linear-gradient(135deg, #ffd3a1 0%, #ffc2a1 100%);
+	background: linear-gradient(135deg, rgba(76, 175, 80, 0.06), rgba(46, 125, 50, 0.04));
 }
 .card-umi {
-	background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+	background: linear-gradient(135deg, rgba(46, 125, 50, 0.06), rgba(129, 199, 132, 0.04));
 }
 .card-total {
-	background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+	background: linear-gradient(135deg, rgba(76, 175, 80, 0.06), rgba(46, 125, 50, 0.04));
 }
 .card-acuracia {
-	background: linear-gradient(135deg, #b2fefd 0%, #a6d9e0 100%);
+	background: linear-gradient(135deg, rgba(129, 199, 132, 0.06), rgba(46, 125, 50, 0.04));
 }
 .alerta-alto {
-	border: 3px solid #dc3545 !important;
+	border-left: 4px solid #bf360c !important;
+	box-shadow: 0 6px 18px rgba(191, 54, 12, 0.06);
 }
 .alerta-baixo {
-	border: 3px solid #007bff !important;
+	border-left: 4px solid #1b5e20 !important;
+	box-shadow: 0 6px 18px rgba(27, 94, 32, 0.06);
 }
 p {
 	margin: 0.2rem 0;
-}
-
-.status-indicator {
-	font-size: 0.9rem;
-	font-weight: 500;
-}
-
-.tendencia {
-	font-size: 0.9rem;
-	color: #666;
-}
-
-.text-muted {
-	font-size: 0.8rem;
 }
 </style>
