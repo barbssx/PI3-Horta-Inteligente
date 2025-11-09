@@ -1,0 +1,8 @@
+[build]
+builder = "NIXPACKS"
+
+[phases.setup]
+nixPkgs = ["nodejs", "python3"]
+
+[start]
+cmd = "npm start"
