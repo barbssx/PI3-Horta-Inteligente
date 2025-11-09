@@ -4,13 +4,13 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 # Diretório de trabalho
-WORKDIR /app/backend
+WORKDIR /app
 
 # Instala Python (scripts de ML)
 RUN apt-get update && apt-get install -y python3 python3-pip && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copia todo o backend de uma vez para garantir que package.json esteja presente
-COPY backend/ ./
+# Copia todo o código (quando Root Directory=backend no Railway, o contexto JÁ É backend/)
+COPY . ./
 
 # Instala dependências Node e Python
 RUN npm ci --only=production || npm install --only=production
