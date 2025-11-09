@@ -1,0 +1,69 @@
+# Backend .dockerignore# =========================
+
+# Quando Root Directory = backend, este arquivo controla o contexto# NODE / FRONTEND
+
+# =========================
+
+node_modules/node_modules
+
+.env/dist
+
+.git/.DS_Store
+
+*.log
+
+venv/# =========================
+
+__pycache__/# PYTHON / MACHINE LEARNING
+
+*.pyc# =========================
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.eggs/
+.pytest_cache/
+*.log
+*.csv
+# REMOVIDO: *.json (quebrava o build, pois excluía package.json)
+*.joblib
+*.pkl
+venv/
+.venv/
+env/
+ENV/
+temp_data.json
+*.sqlite3
+
+# =========================
+# ENVIRONMENT FILES
+# =========================
+.env
+.env.local
+.env.*.local
+
+# =========================
+# LOGS
+# =========================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# =========================
+# EDITORS / SYSTEM FILES
+# =========================
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
+.DS_Store
