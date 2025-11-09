@@ -19,7 +19,7 @@ __pycache__/
 .pytest_cache/
 *.log
 *.csv
-*.json
+# REMOVIDO: *.json (quebrava o build, pois excluía package.json)
 *.joblib
 *.pkl
 venv/
