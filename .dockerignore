@@ -1,0 +1,34 @@
+# =========================
+# ROOT .dockerignore
+# =========================
+# Este arquivo controla o que vai para o contexto do build Docker
+# quando Dockerfile está na raiz e copia com prefixo backend/
+
+# Ignorar node_modules da raiz (se houver frontend)
+node_modules
+dist
+
+# Ignorar arquivos de configuração local e ambiente
+.env
+.env.local
+.git
+.gitignore
+*.md
+LICENSE
+
+# Ignorar pasta src (frontend Vue.js não precisa ir pro backend)
+src/
+
+# NÃO ignorar backend/ - precisamos copiar para dentro da imagem
+# backend/ não deve estar aqui!
+
+# Outros arquivos do projeto
+public/
+babel.config.js
+jsconfig.json
+package.json
+package-lock.json
+vercel.json
+vue.config.js
+railway.toml
+DEPLOY.md
