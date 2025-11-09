@@ -1,8 +1,0 @@
-node_modules
-.env
-.git
-venv
-__pycache__
-*.pyc
-*.log
-temp_data.json
