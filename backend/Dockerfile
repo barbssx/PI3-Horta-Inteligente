@@ -7,13 +7,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
-RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
-
-COPY package*.json ./
-RUN npm install
-
 COPY . .
+
+RUN npm install && \
+    pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 ENV PORT=3000
 ENV NODE_ENV=production
