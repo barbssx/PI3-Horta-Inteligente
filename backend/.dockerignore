@@ -1,0 +1,20 @@
+# Ignorar apenas o que não é necessário no buildnode_modules
+
+node_modules.env
+
+.git.git
+
+.envvenv
+
+*.log__pycache__
+
+venv*.pyc
+
+__pycache__*.log
+
+.pytest_cachetemp_data.json
+
+uploads/*
+!uploads/.gitkeep
+
+# NÃO ignorar package.json, package-lock.json, requirements.txt
