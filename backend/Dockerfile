@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y python3 python3-pip && apt-get clean &&
 COPY package*.json ./
 COPY requirements.txt ./
 
+# DEBUG: Verificar o que foi copiado
+RUN echo "===== CONTEÚDO DE /app APÓS COPY =====" && ls -lah /app/ && echo "===== FIM ====="
+
 RUN npm install --omit=dev
 RUN pip3 install --no-cache-dir -r requirements.txt
 
