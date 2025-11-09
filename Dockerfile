@@ -7,13 +7,15 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
+WORKDIR /app/backend
+
+COPY backend/package*.json ./
 RUN npm install
 
-COPY requirements.txt ./
+COPY backend/requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY backend/ .
 
 ENV PORT=3000
 ENV NODE_ENV=production
