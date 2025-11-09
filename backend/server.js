@@ -36,7 +36,6 @@ app.use(
   })
 );
 
-// Responder pré-flights para todas as rotas (garante OPTIONS responde)
 app.options("*", cors());
 
 app.use(express.json());
@@ -45,13 +44,11 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/registros", registrosRoutes);
 app.use("/api/ml", mlRoutes);
 
-// middleware de tratamento de erros (captura erros síncronos e assíncronos)
 app.use((err, req, res, next) => {
   console.error(
     "Erro não tratado na rota:",
     err && err.stack ? err.stack : err
   );
-  // Garantir header CORS na resposta de erro para que o browser veja a mensagem
   res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.status(500).json({
     erro: "Erro interno no servidor",
@@ -59,7 +56,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Capturar erros globais para evitar crash silencioso
 process.on("uncaughtException", (err) => {
   console.error("uncaughtException:", err && err.stack ? err.stack : err);
 });
@@ -67,8 +63,6 @@ process.on("unhandledRejection", (reason) => {
   console.error("unhandledRejection:", reason);
 });
 
-// Tenta conectar ao banco com retries; se falhar após tentativas, inicia o servidor
-// para que o load balancer não retorne 502 e possamos ver erros nas rotas.
 const startWithDbRetries = async () => {
   const maxAttempts = 5;
   let attempt = 0;
@@ -84,13 +78,12 @@ const startWithDbRetries = async () => {
         err && err.message ? err.message : err
       );
       if (attempt < maxAttempts) {
-        // espera um pouco antes da próxima tentativa (backoff linear)
         await new Promise((r) => setTimeout(r, 2000 * attempt));
       }
     }
   }
 
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 8080;
   app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 };
 
