@@ -40,6 +40,16 @@ app.options("*", cors());
 
 app.use(express.json());
 
+// Endpoints de saúde para healthcheck do Railway
+app.get("/health", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.status(200).json({ status: "ok" });
+});
+app.get("/api", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.status(200).json({ status: "ok" });
+});
+
 app.use("/api/upload", uploadRoutes);
 app.use("/api/registros", registrosRoutes);
 app.use("/api/ml", mlRoutes);
@@ -83,7 +93,7 @@ const startWithDbRetries = async () => {
     }
   }
 
-  const PORT = process.env.PORT || 8080;
+  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 };
 
