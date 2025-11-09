@@ -2,10 +2,12 @@
 builder = "Dockerfile"
 
 [deploy]
-startCommand = "node backend/server.js"
-healthcheckPath = "/"
+startCommand = "npm start"
+healthcheckPath = "/api"
 restartPolicyType = "on_failure"
+numReplicas = 1
 
 [env]
 PORT = "3000"
 NODE_ENV = "production"
+NPM_CONFIG_PRODUCTION = "true"
