@@ -1,9 +1,9 @@
 [build]
 builder = "Dockerfile"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "backend/Dockerfile"
+watchPaths = ["backend/**"]
 
 [deploy]
-startCommand = "node server.js"
 healthcheckPath = "/health"
 restartPolicyType = "on_failure"
 numReplicas = 1
