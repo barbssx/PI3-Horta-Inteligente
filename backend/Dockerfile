@@ -1,24 +1,24 @@
-# Usa Node.js como base
+# Usa a imagem base do Node.js
 FROM node:18
 
 # Define o diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos do Node primeiro (para otimizar cache)
+# Copia os arquivos do Node.js
 COPY package*.json ./
 
 # Instala dependências do Node.js
 RUN npm install
 
-# Copia o restante do projeto
+# Copia todo o restante do código para o container
 COPY . .
 
-# Instala Python e dependências do script
+# Instala Python e as dependências
 RUN apt-get update && apt-get install -y python3 python3-pip
 RUN pip3 install -r python/requirements.txt
 
-# Expõe a porta do servidor
+# Expõe a porta padrão do backend
 EXPOSE 3000
 
-# Comando padrão de inicialização
+# Comando de inicialização
 CMD ["node", "server.js"]
