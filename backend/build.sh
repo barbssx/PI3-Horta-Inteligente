@@ -1,6 +1,3 @@
-#!/bin/bash
-
-# Garante que estamos no diretório correto
 cd "$(dirname "$0")"
 
 # Nome da imagem e tag

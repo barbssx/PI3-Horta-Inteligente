@@ -2,13 +2,19 @@ FROM node:18-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY . /app/
+COPY requirements.txt ./
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-RUN npm install
-RUN pip3 install -r requirements.txt
+COPY . .
 
-EXPOSE 3000
+ENV PORT=3000
+ENV NODE_ENV=production
+
+EXPOSE ${PORT}
 
 CMD ["node", "server.js"]
