@@ -1,4 +1,6 @@
 [build]
-builder = "NIXPACKS"
-buildCommand = "cd backend && npm install"
-start = "cd backend && npm start"
+builder = "Dockerfile"
+
+[env]
+PORT = "3000"
+NODE_ENV = "production"
