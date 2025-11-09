@@ -36,8 +36,6 @@ app.use(
   })
 );
 
-app.options("*", cors());
-
 app.use(express.json());
 
 // Endpoints de saúde para healthcheck do Railway
