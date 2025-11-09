@@ -36,20 +36,62 @@ app.use(
   })
 );
 
+// Responder pré-flights para todas as rotas (garante OPTIONS responde)
+app.options("*", cors());
+
 app.use(express.json());
 
 app.use("/api/upload", uploadRoutes);
 app.use("/api/registros", registrosRoutes);
 app.use("/api/ml", mlRoutes);
 
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log("Conexão com o banco de dados estabelecida com sucesso.");
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
-  })
-  .catch((err) => {
-    console.error("Não foi possível conectar ao banco de dados:", err);
-    process.exit(1);
+// middleware de tratamento de erros (captura erros síncronos e assíncronos)
+app.use((err, req, res, next) => {
+  console.error(
+    "Erro não tratado na rota:",
+    err && err.stack ? err.stack : err
+  );
+  // Garantir header CORS na resposta de erro para que o browser veja a mensagem
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.status(500).json({
+    erro: "Erro interno no servidor",
+    detalhes: err && err.message ? err.message : String(err),
   });
+});
+
+// Capturar erros globais para evitar crash silencioso
+process.on("uncaughtException", (err) => {
+  console.error("uncaughtException:", err && err.stack ? err.stack : err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("unhandledRejection:", reason);
+});
+
+// Tenta conectar ao banco com retries; se falhar após tentativas, inicia o servidor
+// para que o load balancer não retorne 502 e possamos ver erros nas rotas.
+const startWithDbRetries = async () => {
+  const maxAttempts = 5;
+  let attempt = 0;
+  while (attempt < maxAttempts) {
+    try {
+      attempt++;
+      await sequelize.authenticate();
+      console.log("Conexão com o banco de dados estabelecida com sucesso.");
+      break;
+    } catch (err) {
+      console.error(
+        `Tentativa ${attempt} de ${maxAttempts} - erro ao conectar ao banco:`,
+        err && err.message ? err.message : err
+      );
+      if (attempt < maxAttempts) {
+        // espera um pouco antes da próxima tentativa (backoff linear)
+        await new Promise((r) => setTimeout(r, 2000 * attempt));
+      }
+    }
+  }
+
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+};
+
+startWithDbRetries();
