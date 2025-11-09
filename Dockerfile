@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y python3 python3-pip && apt-get clean &&
 COPY . ./
 
 # Instala dependências Node e Python
-RUN npm ci --only=production || npm install --only=production
+RUN npm install --omit=dev
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 EXPOSE 3000
