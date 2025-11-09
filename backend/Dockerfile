@@ -7,7 +7,9 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y python3 python3-pip && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copia do backend/ (contexto é a raiz do repo)
+# Root Directory vazio = contexto na raiz do repo
+# Dockerfile Path = backend/Dockerfile
+# Então copiamos de backend/ para /app
 COPY backend/ ./
 
 # Debug: listar arquivos copiados
