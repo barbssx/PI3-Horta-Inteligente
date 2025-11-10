@@ -16,26 +16,41 @@
 						data-bs-toggle="tooltip"
 						data-bs-placement="top"
 						:title="`Ensina o modelo com os dados históricos. RMSE atual: ${rmse || 'N/A'}`"
+						:disabled="isTraining || isPredicting"
 					>
-						🧠 Treinar Modelo
+						<span v-if="isTraining" class="d-inline-flex align-items-center gap-2">
+							<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+							<span>Treinando modelo...</span>
+						</span>
+						<span v-else>🧠 Treinar Modelo</span>
 					</button>
 					<button
 						class="btn btn-success"
-						@click="gerarPrevisoes"
+						@click="gerarPrevisoes()"
 						data-bs-toggle="tooltip"
 						data-bs-placement="top"
 						title="Faz previsões para os próximos intervalos usando o modelo atual"
+						:disabled="isPredicting || isTraining"
 					>
-						📈 Gerar Previsões
+						<span v-if="isPredicting" class="d-inline-flex align-items-center gap-2">
+							<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+							<span>Gerando previsões...</span>
+						</span>
+						<span v-else>📈 Gerar Previsões</span>
 					</button>
 					<button
 						class="btn btn-outline-secondary btn-update"
-						@click="buscarPrevisoes"
+						@click="atualizarDados"
 						data-bs-toggle="tooltip"
 						data-bs-placement="top"
 						title="Recarrega os dados e atualiza a tela"
+						:disabled="isRefreshing || isPredicting || isTraining"
 					>
-						🔄 Atualizar
+						<span v-if="isRefreshing" class="d-inline-flex align-items-center gap-2">
+							<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+							<span>Atualizando...</span>
+						</span>
+						<span v-else>🔄 Atualizar</span>
 					</button>
 					<button
 						type="button"
@@ -208,6 +223,10 @@ export default {
 			abaSelecionada: "cards",
 			rmse: null,
 			comandosOtimizacao: null,
+			isTraining: false,
+			isPredicting: false,
+			isRefreshing: false,
+			lastFetchError: null,
 			intervalos: {
 				"6h": "Últimas 6h",
 				"1d": "Último Dia",
@@ -279,6 +298,7 @@ export default {
 		},
 
 		async buscarPrevisoes(intervalo = this.intervaloSelecionado) {
+			this.lastFetchError = null;
 			this.loading = true;
 			this.previsoes = [];
 			try {
@@ -289,6 +309,7 @@ export default {
 
 				this.verificarAlertas();
 			} catch (error) {
+				this.lastFetchError = error;
 				console.error(error);
 			} finally {
 				this.loading = false;
@@ -299,38 +320,91 @@ export default {
 		},
 
 		async treinarModelo() {
+			if (this.isTraining || this.isPredicting) return;
+			this.isTraining = true;
 			try {
 				const resTrain = await axios.post(`${API_URL}/ml/treinar`);
 				const trainMsg = resTrain.data?.mensagem || "Modelo treinado com sucesso!";
 
 				await this.buscarAcuracia();
 
-				const resPrevisao = await this.gerarPrevisoes();
+				const resPrevisao = await this.gerarPrevisoes(false);
 
 				let body = `<p><strong>Treinamento:</strong> ${trainMsg}</p>`;
+				let previsaoTexto = "Nenhuma resposta do servidor.";
 				if (!resPrevisao) {
-					body += `<p><strong>Previsões:</strong> Nenhuma resposta do servidor.</p>`;
+					previsaoTexto = "Nenhuma resposta do servidor.";
 				} else if (resPrevisao.error) {
-					body += `<p><strong>Previsões:</strong> Erro ao gerar previsões: ${resPrevisao.mensagem || resPrevisao.error}</p>`;
+					previsaoTexto = `Erro ao gerar previsões: ${resPrevisao.mensagem || resPrevisao.error}`;
+				} else if (resPrevisao?.mensagem?.includes("Não há registros novos")) {
+					previsaoTexto = "Todos os registros já estão atualizados, nenhuma nova previsão era necessária.";
 				} else {
-					body += `<p><strong>Previsões:</strong> ${resPrevisao.mensagem || JSON.stringify(resPrevisao)}</p>`;
+					previsaoTexto = resPrevisao.mensagem || JSON.stringify(resPrevisao);
 				}
+				body += `<p><strong>Previsões:</strong> ${previsaoTexto}</p>`;
 
 				this.showMlModal("Resultado do Treinamento e Previsões", body);
 			} catch (err) {
 				const errMsg = err.response?.data?.erro || err.message || "Erro ao treinar modelo.";
 				this.showMlModal("Erro no Treinamento", `<p>${errMsg}</p>`);
+			} finally {
+				this.isTraining = false;
 			}
 		},
 
-		async gerarPrevisoes() {
+		async gerarPrevisoes(showResultModal = true) {
+			if (this.isPredicting) {
+				return { error: true, mensagem: "Uma geração de previsões já está em andamento." };
+			}
+			this.isPredicting = true;
 			try {
 				const res = await axios.post(`${API_URL}/ml/prever`);
-				this.buscarPrevisoes();
-				return res.data;
+				await this.buscarPrevisoes();
+
+				if (this.lastFetchError) {
+					const mensagemErro = this.lastFetchError.response?.data?.erro || this.lastFetchError.message || "Erro ao atualizar as previsões.";
+					if (showResultModal) {
+						this.showMlModal("Erro ao Atualizar Previsões", `<p>${mensagemErro}</p>`);
+					}
+					return { error: true, mensagem: mensagemErro };
+				}
+
+				const mensagemBruta = res.data?.mensagem || "Previsões geradas com sucesso.";
+				const mensagemFinal = mensagemBruta.includes("Não há registros novos")
+					? "Todos os registros já estão atualizados, nenhuma nova previsão era necessária."
+					: mensagemBruta;
+
+				if (showResultModal) {
+					this.showMlModal("Previsões Atualizadas", `<p>${mensagemFinal}</p>`);
+				}
+
+				const payload = typeof res.data === "object" && res.data !== null ? res.data : {};
+
+				return { ...payload, mensagem: mensagemFinal };
 			} catch (err) {
-				const mensagem = err.response?.data?.erro || "Erro ao gerar previsões.";
+				const mensagem = err.response?.data?.erro || err.message || "Erro ao gerar previsões.";
+				if (showResultModal) {
+					this.showMlModal("Erro ao Gerar Previsões", `<p>${mensagem}</p>`);
+				}
 				return { error: true, mensagem };
+			} finally {
+				this.isPredicting = false;
+			}
+		},
+
+		async atualizarDados() {
+			if (this.isRefreshing || this.isPredicting || this.isTraining) return;
+			this.isRefreshing = true;
+			try {
+				await this.buscarPrevisoes();
+				if (this.lastFetchError) {
+					const mensagemErro = this.lastFetchError.response?.data?.erro || this.lastFetchError.message || "Erro ao atualizar os dados.";
+					this.showMlModal("Erro ao Atualizar", `<p>${mensagemErro}</p>`);
+				} else {
+					this.showMlModal("Dados Atualizados", `<p>Dashboard atualizado com ${this.previsoes.length} registros.</p>`);
+				}
+			} finally {
+				this.isRefreshing = false;
 			}
 		},
 

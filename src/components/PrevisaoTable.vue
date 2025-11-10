@@ -33,7 +33,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="p in previsoes" :key="p.id" :class="rowClass(p)">
+						<tr v-for="(p, index) in paginatedPrevisoes" :key="p.id ?? `${currentPage}-${index}`" :class="rowClass(p)">
 							<td>{{ formatDataBR(p.data) }}</td>
 							<td>{{ p.hora }}</td>
 							<td>{{ formatValue(p.temperatura_real) }}</td>
@@ -43,6 +43,20 @@
 						</tr>
 					</tbody>
 				</table>
+			</div>
+			<div class="pagination-footer mt-3">
+				<div class="pagination-info">
+					Mostrando {{ totalRegistros ? pageStart : 0 }} - {{ totalRegistros ? pageEnd : 0 }} de {{ totalRegistros }} registros.
+				</div>
+				<div class="pagination-controls" role="group" aria-label="Paginação da tabela de previsões">
+					<button type="button" class="btn btn-outline-success" @click="prevPage" :disabled="currentPage === 1">
+						Anterior
+					</button>
+					<span class="pagination-status">Página {{ Math.min(currentPage, totalPages) }} de {{ totalPages }}</span>
+					<button type="button" class="btn btn-outline-success" @click="nextPage" :disabled="currentPage === totalPages || totalRegistros === 0">
+						Próxima
+					</button>
+				</div>
 			</div>
 		</div>
 
@@ -96,17 +110,47 @@ export default {
 			ajudaModal: null,
 			modalTitulo: "",
 			modalConteudo: null,
+			currentPage: 1,
+			pageSize: 100,
+			tableTooltips: [],
 		};
 	},
 	mounted() {
 		this.initTooltips();
 		this.ajudaModal = new bootstrap.Modal(document.getElementById("ajudaModal"));
 	},
+	beforeUnmount() {
+		this.destroyTooltips();
+		if (this.ajudaModal) {
+			this.ajudaModal.dispose();
+			this.ajudaModal = null;
+		}
+	},
+	watch: {
+		previsoes: {
+			immediate: true,
+			handler() {
+				this.currentPage = 1;
+				this.$nextTick(() => this.initTooltips());
+			},
+		},
+		currentPage() {
+			this.$nextTick(() => this.initTooltips());
+		},
+	},
 	methods: {
+		destroyTooltips() {
+			this.tableTooltips.forEach((tooltip) => tooltip.dispose());
+			this.tableTooltips = [];
+		},
 		initTooltips() {
-			const tooltipTriggerList = [].slice.call(this.$el.querySelectorAll('[data-bs-toggle="tooltip"]'));
-			tooltipTriggerList.map(function (tooltipTriggerEl) {
-				return new bootstrap.Tooltip(tooltipTriggerEl);
+			this.destroyTooltips();
+			const tooltipTriggerList = [].slice.call(
+				this.$el ? this.$el.querySelectorAll('[data-bs-toggle="tooltip"]') : []
+			);
+			tooltipTriggerList.forEach((tooltipTriggerEl) => {
+				const tooltip = new bootstrap.Tooltip(tooltipTriggerEl);
+				this.tableTooltips.push(tooltip);
 			});
 		},
 		formatValue(value) {
@@ -128,6 +172,16 @@ export default {
 			if (p.temperatura_prevista < 10) return "alerta-baixo";
 			if (p.umidade_prevista < 30) return "umidade-baixa";
 			return "";
+		},
+		setPage(page) {
+			if (page < 1 || page > this.totalPages) return;
+			this.currentPage = page;
+		},
+		nextPage() {
+			this.setPage(this.currentPage + 1);
+		},
+		prevPage() {
+			this.setPage(this.currentPage - 1);
 		},
 		showAjuda(tipo) {
 			const conteudo = {
@@ -179,6 +233,27 @@ export default {
 			this.modalTitulo = info.titulo;
 			this.modalConteudo = info.conteudo;
 			this.ajudaModal.show();
+		},
+	},
+	computed: {
+		totalRegistros() {
+			return Array.isArray(this.previsoes) ? this.previsoes.length : 0;
+		},
+		totalPages() {
+			return this.totalRegistros === 0
+				? 1
+				: Math.ceil(this.totalRegistros / this.pageSize);
+		},
+		paginatedPrevisoes() {
+			const inicio = (this.currentPage - 1) * this.pageSize;
+			return (this.previsoes || []).slice(inicio, inicio + this.pageSize);
+		},
+		pageStart() {
+			if (this.totalRegistros === 0) return 0;
+			return (this.currentPage - 1) * this.pageSize + 1;
+		},
+		pageEnd() {
+			return Math.min(this.currentPage * this.pageSize, this.totalRegistros);
 		},
 	},
 };
@@ -407,5 +482,45 @@ thead th[data-bs-toggle="tooltip"] {
 
 .btn-close-white {
 	filter: brightness(0) invert(1);
+}
+
+.pagination-footer {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding-top: 1rem;
+	margin-top: 1rem;
+	border-top: 1px solid rgba(46, 125, 50, 0.1);
+	background: rgba(248, 249, 250, 0.6);
+	border-radius: 0.75rem;
+	padding: 1rem;
+}
+
+@media (min-width: 768px) {
+	.pagination-footer {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+}
+
+.pagination-info {
+	font-size: 0.95rem;
+	color: #274a23;
+}
+
+.pagination-controls {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.pagination-controls .btn {
+	min-width: 110px;
+}
+
+.pagination-status {
+	font-weight: 600;
+	color: #2e7d32;
 }
 </style>
