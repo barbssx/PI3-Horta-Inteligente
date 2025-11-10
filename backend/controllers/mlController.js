@@ -25,13 +25,15 @@ exports.treinarModelo = async (req, res) => {
     fs.writeFileSync(tempFilePath, JSON.stringify(registros));
 
     const pythonCmd = process.platform === "win32" ? "python" : "python3";
+    const scriptPath = path.join(__dirname, "..", "treinar_modelo.py");
 
-    const pythonProcess = spawn(pythonCmd, [
-      path.join(__dirname, "..", "treinar_modelo.py"),
-    ]);
+    const pythonProcess = spawn(pythonCmd, [scriptPath, tempFilePath], {
+      cwd: path.join(__dirname, ".."),
+    });
 
     let pythonOutput = "";
     let pythonError = "";
+    let responseSent = false;
 
     pythonProcess.stdout.on("data", (data) => {
       pythonOutput += data.toString();
@@ -41,7 +43,26 @@ exports.treinarModelo = async (req, res) => {
       pythonError += data.toString();
     });
 
+    pythonProcess.on("error", (processError) => {
+      if (responseSent) return;
+      responseSent = true;
+      console.error("Falha ao iniciar processo Python:", processError);
+      try {
+        fs.unlinkSync(tempFilePath);
+      } catch (err) {
+        console.warn("Não foi possível excluir o arquivo temporário:", err);
+      }
+
+      res.status(500).json({
+        status: "erro",
+        titulo: "Erro ao iniciar script Python",
+        mensagem: "Não foi possível iniciar o processo de treinamento.",
+        detalhes: processError.message,
+      });
+    });
+
     pythonProcess.on("close", async () => {
+      if (responseSent) return;
       try {
         fs.unlinkSync(tempFilePath);
       } catch (err) {
@@ -50,6 +71,7 @@ exports.treinarModelo = async (req, res) => {
 
       if (pythonError || pythonOutput.startsWith("ERRO:")) {
         console.error("Erro do Python:", pythonError || pythonOutput);
+        responseSent = true;
         return res.status(500).json({
           status: "erro",
           titulo: "Erro ao Treinar Modelo (Python)",
@@ -58,10 +80,25 @@ exports.treinarModelo = async (req, res) => {
         });
       }
 
-      const [coef_T_Amb, coef_U_Amb, intercept_] = pythonOutput
+      const valores = pythonOutput
         .trim()
         .split(",")
-        .map(Number);
+        .map((valor) => Number(valor));
+
+      if (
+        valores.length !== 3 ||
+        valores.some((valor) => Number.isNaN(valor))
+      ) {
+        responseSent = true;
+        return res.status(500).json({
+          status: "erro",
+          titulo: "Saída inválida do script Python",
+          mensagem: "O script retornou valores inesperados.",
+          detalhes: pythonOutput,
+        });
+      }
+
+      const [coef_T_Amb, coef_U_Amb, intercept_] = valores;
 
       global.modeloTemp = { coef_T_Amb, coef_U_Amb, intercept_ };
       console.log("Modelo (Regressão Linear) ATUALIZADO:", global.modeloTemp);
@@ -89,6 +126,7 @@ exports.treinarModelo = async (req, res) => {
         temNovosRegistros: registrosSemPrevisao.length > 0,
         quantidadeNovosRegistros: registrosSemPrevisao.length,
       });
+      responseSent = true;
     });
   } catch (err) {
     console.error("Erro no processo de treinamento (Node.js):", err);
