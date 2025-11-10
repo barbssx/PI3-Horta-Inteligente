@@ -6,6 +6,16 @@ const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
+const logError = (context, error) => {
+  const details =
+    error instanceof Error
+      ? error.stack || error.message
+      : typeof error === "string"
+      ? error
+      : JSON.stringify(error);
+  console.error(`[mlController] ${context}:`, details);
+};
+
 exports.treinarModelo = async (req, res) => {
   try {
     const registros = await Registro.findAll({
@@ -46,11 +56,11 @@ exports.treinarModelo = async (req, res) => {
     pythonProcess.on("error", (processError) => {
       if (responseSent) return;
       responseSent = true;
-      console.error("Falha ao iniciar processo Python:", processError);
+      logError("Falha ao iniciar processo Python", processError);
       try {
         fs.unlinkSync(tempFilePath);
       } catch (err) {
-        console.warn("Não foi possível excluir o arquivo temporário:", err);
+        logError("Não foi possível excluir o arquivo temporário", err);
       }
 
       res.status(500).json({
@@ -66,11 +76,14 @@ exports.treinarModelo = async (req, res) => {
       try {
         fs.unlinkSync(tempFilePath);
       } catch (err) {
-        console.warn("Não foi possível excluir o arquivo temporário:", err);
+        logError("Não foi possível excluir o arquivo temporário", err);
       }
 
       if (pythonError || pythonOutput.startsWith("ERRO:")) {
-        console.error("Erro do Python:", pythonError || pythonOutput);
+        logError(
+          "Erro retornado pelo script Python",
+          pythonError || pythonOutput
+        );
         responseSent = true;
         return res.status(500).json({
           status: "erro",
@@ -90,6 +103,7 @@ exports.treinarModelo = async (req, res) => {
         valores.some((valor) => Number.isNaN(valor))
       ) {
         responseSent = true;
+        logError("Saída inválida do script Python", valores);
         return res.status(500).json({
           status: "erro",
           titulo: "Saída inválida do script Python",
@@ -103,11 +117,13 @@ exports.treinarModelo = async (req, res) => {
       global.modeloTemp = { coef_T_Amb, coef_U_Amb, intercept_ };
       console.log("Modelo (Regressão Linear) ATUALIZADO:", global.modeloTemp);
 
+      await Previsao.sync();
+
       const registrosSemPrevisao = await Registro.findAll({
         where: {
           id: {
             [Op.notIn]: Sequelize.literal(
-              "(SELECT id_registro FROM Previsoes)"
+              "(SELECT registro_id FROM previsoes WHERE registro_id IS NOT NULL)"
             ),
           },
         },
@@ -129,7 +145,7 @@ exports.treinarModelo = async (req, res) => {
       responseSent = true;
     });
   } catch (err) {
-    console.error("Erro no processo de treinamento (Node.js):", err);
+    logError("Erro no processo de treinamento (Node.js)", err);
     res.status(500).json({
       status: "erro",
       titulo: "Erro Interno (Node.js)",
@@ -200,7 +216,7 @@ exports.preverTemperatura = async (req, res) => {
       total: previsoes.length,
     });
   } catch (err) {
-    console.error("Erro ao prever temperatura:", err);
+    logError("Erro ao prever temperatura", err);
     res.status(500).json({ erro: "Erro ao prever temperatura" });
   }
 };
@@ -221,7 +237,7 @@ exports.ultimosComPrevisao = async (req, res) => {
 
     res.json(previsoes);
   } catch (err) {
-    console.error("Erro ao buscar previsões:", err);
+    logError("Erro ao buscar previsões", err);
     res.status(500).json({ erro: "Erro ao buscar previsões" });
   }
 };
@@ -275,7 +291,7 @@ exports.ultimosPorIntervalo = async (req, res) => {
     res.json(previsoes);
     return;
   } catch (err) {
-    console.error("Erro ao verificar anomalias:", err);
+    logError("Erro ao verificar anomalias (intervalo)", err);
     res.status(500).json({ erro: "Erro ao verificar anomalias." });
   }
 };
@@ -319,7 +335,7 @@ exports.verificarAnomalias = async (req, res) => {
       });
     }
   } catch (err) {
-    console.error("Erro ao verificar anomalias:", err);
+    logError("Erro ao verificar anomalias", err);
     res.status(500).json({ erro: "Erro ao verificar anomalias." });
   }
 };
@@ -364,7 +380,7 @@ exports.calcularAcuraciaModelo = async (req, res) => {
 
     res.json(acuracia);
   } catch (err) {
-    console.error("Erro ao calcular acurácia do modelo:", err);
+    logError("Erro ao calcular acurácia do modelo", err);
     res.status(500).json({ erro: "Erro ao calcular acurácia do modelo." });
   }
 };
@@ -451,7 +467,7 @@ exports.gerarComandosDeOtimizacao = async (req, res) => {
       });
     }
   } catch (err) {
-    console.error("Erro ao gerar comandos de otimização:", err);
+    logError("Erro ao gerar comandos de otimização", err);
     res.status(500).json({ erro: "Erro ao gerar comandos de otimização." });
   }
 };

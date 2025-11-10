@@ -5,6 +5,16 @@ const xlsx = require("xlsx");
 const moment = require("moment");
 const Registro = require("../models/Registro");
 
+const logError = (context, error) => {
+  const details =
+    error instanceof Error
+      ? error.stack || error.message
+      : typeof error === "string"
+      ? error
+      : JSON.stringify(error);
+  console.error(`[fileController] ${context}:`, details);
+};
+
 exports.uploadFile = async (req, res) => {
   try {
     if (!req.file) return res.status(400).send("Nenhum arquivo enviado.");
@@ -65,8 +75,8 @@ exports.uploadFile = async (req, res) => {
           ) {
             registros.push(registro);
           } else {
-            console.warn(
-              "Linha CSV pulada por conter data ou hora inválida:",
+            logError(
+              "Linha CSV ignorada por conter data ou hora inválida",
               row
             );
           }
@@ -114,8 +124,8 @@ exports.uploadFile = async (req, res) => {
           ) {
             batch.push(registro);
           } else {
-            console.warn(
-              "Linha XLSX pulada por conter data ou hora inválida:",
+            logError(
+              "Linha XLSX ignorada por conter data ou hora inválida",
               row.values
             );
           }
@@ -136,7 +146,7 @@ exports.uploadFile = async (req, res) => {
       res.status(400).send("Formato de arquivo não suportado.");
     }
   } catch (err) {
-    console.error("Erro ao processar o arquivo:", err);
+    logError("Erro ao processar o arquivo", err);
     res.status(500).send("Erro ao processar o arquivo.");
   }
 };
