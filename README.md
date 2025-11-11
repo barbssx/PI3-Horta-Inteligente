@@ -1,54 +1,108 @@
-# Horta Inteligente
+# 🌱 Horta Inteligente – Monitoramento e Previsão de Temperatura e Umidade  
 
-## Visão Geral do Projeto
+### Projeto Integrador III e IV – Engenharia da Computação  
+**Universidade Virtual do Estado de São Paulo (UNIVESP)**  
 
-O projeto **Horta Inteligente** visa desenvolver uma ferramenta computacional inovadora para auxiliar no aprendizado e pesquisa de técnicas agrícolas em hortas escolares, com foco especial na compostagem. Esta iniciativa responde à demanda de professores e gestores por soluções que integrem tecnologia e ciência na educação ambiental, promovendo práticas sustentáveis alinhadas aos Objetivos de Desenvolvimento Sustentável (ODS) 11 e 12 da Agenda 2030 da ONU.
+---
 
-## O Problema
+## 📘 Visão Geral do Projeto
 
-Apesar de as hortas escolares serem ambientes ideais para práticas sustentáveis como a compostagem, há uma lacuna na disponibilidade de ferramentas que auxiliem no monitoramento eficaz e no aprofundamento científico dessas atividades. Nosso problema de pesquisa centrou-se em: **Como desenvolver uma ferramenta computacional que auxilie no aprendizado e pesquisa de técnicas agrícolas na horta escolar?** 
+O projeto **Horta Inteligente** foi desenvolvido com o objetivo de **monitorar e analisar os níveis de temperatura e umidade** de uma **composteira automatizada**, promovendo a integração entre **Internet das Coisas (IoT)**, **banco de dados** e **análise de dados preditiva**.  
 
-## Objetivos do Projeto
+Além de sua aplicação prática, o sistema tem caráter **educacional**, permitindo que professores e estudantes explorem, de forma contextualizada, conceitos de tecnologia, sustentabilidade e automação.
 
-O **Objetivo Geral** é desenvolver um software que apoie estudantes do Programa de Ensino Integral no estudo científico de técnicas agrícolas.
+---
 
-Para alcançar isso, definimos os seguintes **Objetivos Específicos**.
-* Monitorar a temperatura e umidade da compostagem.
-* Enviar dados coletados para a nuvem.
-* Analisar as variáveis monitoradas utilizando modelos matemáticos preditivos.
+## 🧩 Evolução dos Projetos
 
-## A Solução: Website Horta Inteligente
+### 🔹 PI3 – Coleta e Armazenamento de Dados  
+A primeira fase do projeto teve foco na **coleta e registro dos dados ambientais** da composteira por meio de sensores conectados a um microcontrolador Arduino, com gravação automática dos resultados em um **cartão microSD**.  
 
-A solução desenvolvida é o **website Horta Inteligente**, uma interface digital robusta e educativa.
+Essa etapa estabeleceu a base para o armazenamento e análise das variáveis de **temperatura** e **umidade**, essenciais para o controle do processo de decomposição.
 
-### Tecnologias Utilizadas
-* **Frontend:** Desenvolvido com **Vue.js** e estilizado com **Bootstrap**, garantindo responsividade, leveza e alta usabilidade. (Anteriormente foi utilizado Tailwind CSS, conforme slides, mas a informação foi atualizada para Bootstrap)
-* **Backend:** Implementado com **Node.js**.
-* **Banco de Dados:** **MySQL**.
-* **Hospedagem:** O frontend está hospedado na **Vercel**, e o backend e o banco de dados no **Railway**.
+---
 
-### Funcionalidades Principais
-O website é estruturado em seções chave para o monitoramento e aprendizado:
+### 🔹 PI4 – Previsão, Visualização e Ações Educativas  
+Na segunda fase, o projeto evoluiu para incluir:  
+- 💻 **Aplicação web interativa** para upload e visualização dos dados;  
+- 🗄️ **Banco de dados PostgreSQL** integrado ao backend em **Node.js com Sequelize**;  
+- 🤖 **Treinamento de modelo preditivo**, gerando previsões de temperatura e umidade com base em dados históricos;  
+- 📈 **Dashboard dinâmico** com gráficos e indicadores interativos;  
+- 🚨 **Alertas automáticos** em caso de anomalias ou condições críticas;  
+- 💡 **Tooltips explicativos** para promover a compreensão educativa das funcionalidades;  
+- 🧭 **Interface acessível e responsiva**, voltada para o uso em ambientes acadêmicos.  
 
-* **Página Inicial:** Ponto de entrada estratégico que apresenta uma visão geral do projeto e serve como hub de navegação para as demais seções.
-* **Página "Sobre o Projeto":** Detalha a motivação, os componentes de hardware (sensores DS18B20, AM2320, módulo RTC e cartão SD), o protocolo de coleta de dados a cada 15 minutos e inclui uma galeria com imagens do ambiente, ferramentas e processo de montagem para corroborar a implementação.
-* **Dashboard:** Módulo analítico central que permite o upload e processamento de arquivos CSV e XLSX contendo os dados coletados. Os dados são exibidos em gráficos temporais de temperatura, umidade e tensão da bateria, facilitando a análise visual. *É importante notar que, para o upload de dados ao banco, arquivos referentes a um único dia são recomendados devido a limitações de processamento de grandes volumes, mas a visualização na Dashboard não é impactada pela quantidade de linhas.*
-* **Página "Conhecimento":** Uma biblioteca didática que consolida os principais aprendizados e tecnologias envolvidos, abordando compostagem, Arduino, sensores e análise de dados. Esta seção promove o entendimento integrado dos fundamentos científicos e tecnológicos.
+---
 
-### Hardware Complementar
-A solução também incorpora um sistema de hardware com **Arduino Nano**, protoboard, baterias, módulos de relógio e armazenamento, e sensores DS18B20 e AM2320 para a coleta de dados de temperatura e umidade do ar e temperatura do substrato. O código para o Arduino é em C++ com bibliotecas específicas para os sensores, armazenamento em cartão SD e controle de tempo. O hardware é protegido por uma caixa plástica 3D e foi posicionado na estrutura de alvenaria da composteira com coleta de dados a cada 15 minutos.
+## ⚙️ Tecnologias Utilizadas
 
-## Link do Projeto
+| Camada | Tecnologias |
+|--------|--------------|
+| **Frontend** | Vue.js, Bootstrap, Chart.js |
+| **Backend** | Node.js, Express, Sequelize |
+| **Banco de Dados** | PostgreSQL |
+| **Análise de Dados** | Python (Pandas, Scikit-learn) |
+| **Arquitetura** | MVC (Model-View-Controller) |
+| **Controle de Versão** | Git e GitHub |
+| **Integração Contínua** | GitHub Actions |
 
-Acesse a aplicação em funcionamento: [https://dashboard-eight-xi-35.vercel.app/](https://dashboard-eight-xi-35.vercel.app/)
+---
 
-## Integrantes do Grupo
+## 📊 Principais Funcionalidades
 
-* Alíni Soriano Pereira
-* Ana Paula Lagisck
-* Barbara Sthefani Leite Silva
-* Camila Franciane Evangelista de Melo
-* Leonardo de Oliveira Lopes
-* Regina Sanae Kurata
-* Renan Fortaleza de Carvalho
-* Rubens Luiz Rodrigues
+- 📂 Upload de arquivos `.csv` ou `.xlsx` gerados pelo microcontrolador;  
+- 💾 Armazenamento e organização automática dos dados no banco relacional;  
+- 🔍 Treinamento e execução de **modelo preditivo** para prever condições futuras;  
+- 📉 Exibição dos resultados em **gráficos interativos e tabelas dinâmicas**;  
+- 🚨 Emissão de **alertas automáticos** para situações anômalas;  
+- 💬 **Tooltips** informativos e interface intuitiva voltada à **educação tecnológica**.
+
+---
+
+## 🎓 Objetivo Educacional
+
+O projeto busca **aliar tecnologia e aprendizado**, aproximando estudantes de temas como:  
+- 🌿 Sustentabilidade e automação ambiental;  
+- 📊 Análise e interpretação de dados reais;  
+- 🔌 Conceitos práticos de IoT e ciência de dados;  
+- 💻 Desenvolvimento web e integração de sistemas.  
+
+O sistema foi projetado para **uso didático em escolas e universidades**, oferecendo uma ferramenta acessível para compreender fenômenos ambientais e tecnológicos de forma integrada.
+
+---
+
+## 🧠 Metodologia
+
+O desenvolvimento foi baseado nas etapas **“Ouvir, Criar e Implementar”** da metodologia UNIVESP, combinadas com elementos do modelo **CRISP-DM**, voltado à análise e mineração de dados.  
+Essa abordagem permitiu o avanço progressivo desde a coleta e tratamento das informações até a criação de um sistema **funcional, educativo e acessível**.
+
+---
+
+
+---
+
+## 👨‍💻 Integrantes – PI IV
+
+- Ana Paula Lagisck  
+- Bárbara Sthefani Leite Silva  
+- Gustavo da Silva Aguiar Ribeiro  
+- João Augusto Caminhoto  
+- Leonardo de Oliveira Lopes  
+- Renaisa Alves Silva  
+- Renan Fortaleza de Carvalho  
+- Rubens Luiz Rodrigues  
+
+---
+
+## 🔗 Acesso à Aplicação
+
+Acesse o projeto em funcionamento:  
+👉 [https://dashboard-eight-xi-35.vercel.app/](https://dashboard-eight-xi-35.vercel.app/)
+
+---
+
+## 🧾 Licença
+
+Este projeto é de uso **acadêmico e educativo**, desenvolvido no contexto do **Projeto Integrador da UNIVESP (PI III e PI IV)**.
+
+---
