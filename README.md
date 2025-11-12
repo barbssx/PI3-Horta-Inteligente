@@ -1,6 +1,6 @@
 # 🌱 Horta Inteligente – Monitoramento e Previsão de Temperatura e Umidade  
 
-### Projeto Integrador III e IV – Engenharia da Computação  
+### Projeto Integrador III e IV – Engenharia da Computação, Ciência de Dados e Bacharelado em Tecnologia da Informação
 **Universidade Virtual do Estado de São Paulo (UNIVESP)**  
 
 ---
