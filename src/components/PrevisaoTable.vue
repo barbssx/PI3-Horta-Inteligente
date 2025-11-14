@@ -45,13 +45,9 @@
 				</table>
 			</div>
 			<div class="pagination-footer mt-3">
-				<div class="pagination-info">
-					Mostrando {{ totalRegistros ? pageStart : 0 }} - {{ totalRegistros ? pageEnd : 0 }} de {{ totalRegistros }} registros.
-				</div>
+				<div class="pagination-info">Mostrando {{ totalRegistros ? pageStart : 0 }} - {{ totalRegistros ? pageEnd : 0 }} de {{ totalRegistros }} registros.</div>
 				<div class="pagination-controls" role="group" aria-label="Paginação da tabela de previsões">
-					<button type="button" class="btn btn-outline-success" @click="prevPage" :disabled="currentPage === 1">
-						Anterior
-					</button>
+					<button type="button" class="btn btn-outline-success" @click="prevPage" :disabled="currentPage === 1">Anterior</button>
 					<span class="pagination-status">Página {{ Math.min(currentPage, totalPages) }} de {{ totalPages }}</span>
 					<button type="button" class="btn btn-outline-success" @click="nextPage" :disabled="currentPage === totalPages || totalRegistros === 0">
 						Próxima
@@ -145,9 +141,7 @@ export default {
 		},
 		initTooltips() {
 			this.destroyTooltips();
-			const tooltipTriggerList = [].slice.call(
-				this.$el ? this.$el.querySelectorAll('[data-bs-toggle="tooltip"]') : []
-			);
+			const tooltipTriggerList = [].slice.call(this.$el ? this.$el.querySelectorAll('[data-bs-toggle="tooltip"]') : []);
 			tooltipTriggerList.forEach((tooltipTriggerEl) => {
 				const tooltip = new bootstrap.Tooltip(tooltipTriggerEl);
 				this.tableTooltips.push(tooltip);
@@ -240,9 +234,7 @@ export default {
 			return Array.isArray(this.previsoes) ? this.previsoes.length : 0;
 		},
 		totalPages() {
-			return this.totalRegistros === 0
-				? 1
-				: Math.ceil(this.totalRegistros / this.pageSize);
+			return this.totalRegistros === 0 ? 1 : Math.ceil(this.totalRegistros / this.pageSize);
 		},
 		paginatedPrevisoes() {
 			const inicio = (this.currentPage - 1) * this.pageSize;
@@ -458,10 +450,10 @@ thead th[data-bs-toggle="tooltip"] {
 	max-height: 90vh;
 }
 
-			.modal-dialog-scrollable .modal-body {
-			overflow-y: auto;
-			max-height: calc(90vh - 120px);
-		}
+.modal-dialog-scrollable .modal-body {
+	overflow-y: auto;
+	max-height: calc(90vh - 120px);
+}
 
 .modal-footer {
 	border-top: 1px solid rgba(46, 125, 50, 0.1);

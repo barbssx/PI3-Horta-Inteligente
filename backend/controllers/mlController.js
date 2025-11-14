@@ -262,24 +262,26 @@ exports.ultimosPorIntervalo = async (req, res) => {
         dataInicio = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
     }
 
-    const dataInicioStr = dataInicio.toISOString().split("T")[0];
+    const dataInicioStr = dataInicio
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
 
     const previsoes = await Previsao.findAll({
-      where: {
-        [Op.or]: [
-          { criado_em: { [Op.gte]: dataInicio } },
-          { data: { [Op.gte]: dataInicioStr } },
-        ],
-      },
-      order: [["id", "ASC"]],
+      where: Sequelize.literal(
+        `CONCAT(data, ' ', IFNULL(hora, '00:00:00')) >= '${dataInicioStr}'`
+      ),
+      order: [
+        ["data", "DESC"],
+        ["hora", "DESC"],
+      ],
       raw: true,
     });
 
     console.log(
       `PREVISÕES encontradas no intervalo (${intervalo}):`,
       previsoes.length,
-      `\nData início: ${dataInicio.toISOString()}`,
-      `\nData início (string): ${dataInicioStr}`,
+      `\nData início: ${dataInicioStr}`,
       `\nData atual: ${agora.toISOString()}`
     );
 
