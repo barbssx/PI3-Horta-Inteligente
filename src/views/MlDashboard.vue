@@ -1,5 +1,14 @@
 <template>
 	<div class="container py-4">
+		<button class="btn-voltar" @click="$router.back()">
+			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+				<path
+					fill-rule="evenodd"
+					d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"
+				/>
+			</svg>
+			<span>Voltar</span>
+		</button>
 		<header class="text-center">
 			<h2 class="mb-4 display-6 fw-bold text-primary">🌿 Painel de Previsões</h2>
 			<p class="page-desc mx-auto mb-3">
@@ -117,22 +126,29 @@
 			<section class="tab-content">
 				<div v-if="abaSelecionada === 'cards'" class="row g-3 mb-4">
 					<PrevisaoCard
-						title="Temperatura Atual"
+						title="Temperatura Média"
 						:real="tempAtual"
 						prev=""
 						icon="🌡️"
 						unidade="°C"
-						descricao="A última temperatura real medida pela sonda dentro do composto."
+						:descricao="`Temperatura média no intervalo de ${intervaloSelecionado}.`"
 					/>
 					<PrevisaoCard
-						title="Próxima Previsão (Temp.)"
+						title="Previsão Média (Temp.)"
 						:real="tempPrevista"
 						prev=""
 						icon="🔮"
 						unidade="°C"
-						descricao="A previsão de temperatura para o próximo intervalo, calculada pelo modelo."
+						:descricao="`Média das previsões de temperatura no intervalo de ${intervaloSelecionado}.`"
 					/>
-					<PrevisaoCard title="Humidade Atual" :real="umidAtual" prev="" icon="💧" unidade="%" descricao="A última humidade real medida no ambiente." />
+					<PrevisaoCard 
+						title="Umidade Média" 
+						:real="umidAtual" 
+						prev="" 
+						icon="💧" 
+						unidade="%" 
+						:descricao="`Umidade média no intervalo de ${intervaloSelecionado}.`" 
+					/>
 					<PrevisaoCard
 						title="Acurácia (RMSE)"
 						:real="rmse ? parseFloat(rmse).toFixed(2) : 'N/A'"
@@ -247,14 +263,36 @@ export default {
 			}
 			return this.previsoes[this.previsoes.length - 1];
 		},
+		
+		mediaTemperaturaReal() {
+			if (!this.previsoes || this.previsoes.length === 0) return 0;
+			const valores = this.previsoes.filter(p => p.temperatura_real !== null).map(p => parseFloat(p.temperatura_real));
+			if (valores.length === 0) return 0;
+			return valores.reduce((acc, val) => acc + val, 0) / valores.length;
+		},
+		
+		mediaTemperaturaPrevista() {
+			if (!this.previsoes || this.previsoes.length === 0) return 0;
+			const valores = this.previsoes.filter(p => p.temperatura_prevista !== null).map(p => parseFloat(p.temperatura_prevista));
+			if (valores.length === 0) return 0;
+			return valores.reduce((acc, val) => acc + val, 0) / valores.length;
+		},
+		
+		mediaUmidadeReal() {
+			if (!this.previsoes || this.previsoes.length === 0) return 0;
+			const valores = this.previsoes.filter(p => p.umidade_real !== null).map(p => parseFloat(p.umidade_real));
+			if (valores.length === 0) return 0;
+			return valores.reduce((acc, val) => acc + val, 0) / valores.length;
+		},
+		
 		tempAtual() {
-			return parseFloat(this.ultimoRegistro.temperatura_real).toFixed(1);
+			return this.mediaTemperaturaReal.toFixed(1);
 		},
 		tempPrevista() {
-			return parseFloat(this.ultimoRegistro.temperatura_prevista).toFixed(1);
+			return this.mediaTemperaturaPrevista.toFixed(1);
 		},
 		umidAtual() {
-			return parseFloat(this.ultimoRegistro.umidade_real).toFixed(1);
+			return this.mediaUmidadeReal.toFixed(1);
 		},
 		umidPrevista() {
 			return parseFloat(this.ultimoRegistro.umidade_prevista).toFixed(1);
@@ -749,6 +787,22 @@ main {
 .modal-footer {
 	border-top: 1px solid rgba(0, 0, 0, 0.06);
 	padding: 1rem 1.5rem;
+}
+
+.btn-voltar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 20px;
+	color: #2e7d32;
+	font-weight: 600;
+	cursor: pointer;
+	border: none;
+	background: transparent;
+	transition: color 0.3s ease;
+}
+.btn-voltar:hover {
+	color: #1b5e20;
 }
 
 .page-desc {

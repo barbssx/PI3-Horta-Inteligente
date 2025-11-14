@@ -40,15 +40,44 @@ export default {
 			this.chartInstance?.resize();
 		},
 
-		formatDateTime(p) {
+		formatDateTime(p, showHour = true) {
 			if (!p.data) return "";
 			const date = new Date(p.data);
 			if (isNaN(date)) return p.data;
 
 			const dia = String(date.getDate()).padStart(2, "0");
 			const mes = String(date.getMonth() + 1).padStart(2, "0");
-			const hora = p.hora ? p.hora.substring(0, 5) : `${date.getHours()}:${date.getMinutes()}`;
+
+			if (!showHour) {
+				return `${dia}/${mes}`;
+			}
+
+			const hora = p.hora ? p.hora.substring(0, 5) : `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 			return `${dia}/${mes} ${hora}`;
+		},
+
+		getAxisLabelConfig() {
+			const total = this.previsoes.length;
+
+			if (this.intervalo === "6h") {
+				if (total <= 12) return { interval: 0, rotate: 30, showHour: true };
+				if (total <= 24) return { interval: 1, rotate: 35, showHour: true };
+				return { interval: 2, rotate: 40, showHour: true };
+			}
+
+			if (this.intervalo === "1d") {
+				if (total <= 24) return { interval: 1, rotate: 35, showHour: true };
+				if (total <= 48) return { interval: 3, rotate: 40, showHour: true };
+				return { interval: 5, rotate: 45, showHour: true };
+			}
+
+			if (this.intervalo === "1w") {
+				if (total <= 50) return { interval: 4, rotate: 40, showHour: false };
+				if (total <= 100) return { interval: 8, rotate: 45, showHour: false };
+				return { interval: 12, rotate: 45, showHour: false };
+			}
+
+			return { interval: Math.floor(total / 15), rotate: 45, showHour: true };
 		},
 
 		renderChart() {
@@ -57,7 +86,8 @@ export default {
 				return;
 			}
 
-			const labels = this.previsoes.map((p) => this.formatDateTime(p));
+			const labelConfig = this.getAxisLabelConfig();
+			const labels = this.previsoes.map((p) => this.formatDateTime(p, labelConfig.showHour));
 
 			const tempReal = this.previsoes.map((p) => p.temperatura_real ?? null);
 			const tempPrev = this.previsoes.map((p) => p.temperatura_prevista ?? null);
@@ -90,7 +120,7 @@ export default {
 				grid: {
 					left: "3%",
 					right: "3%",
-					bottom: "3%",
+					bottom: "12%",
 					containLabel: true,
 				},
 				xAxis: {
@@ -98,8 +128,10 @@ export default {
 					data: labels,
 					boundaryGap: false,
 					axisLabel: {
-						rotate: 30,
-						interval: this.previsoes.length > 50 ? 5 : 0,
+						rotate: labelConfig.rotate,
+						interval: labelConfig.interval,
+						fontSize: 10,
+						hideOverlap: true,
 					},
 				},
 				yAxis: [

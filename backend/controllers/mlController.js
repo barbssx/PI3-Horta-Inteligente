@@ -252,6 +252,9 @@ exports.ultimosPorIntervalo = async (req, res) => {
       case "6h":
         dataInicio = new Date(agora.getTime() - 6 * 60 * 60 * 1000);
         break;
+      case "1d":
+        dataInicio = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
+        break;
       case "1w":
         dataInicio = new Date(agora.getTime() - 7 * 24 * 60 * 60 * 1000);
         break;
@@ -259,23 +262,9 @@ exports.ultimosPorIntervalo = async (req, res) => {
         dataInicio = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
     }
 
-    const dataInicioFormatada = dataInicio.toISOString().split("T")[0];
-    const dataInicioSQL = dataInicio
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", " ");
-
     const previsoes = await Previsao.findAll({
       where: {
-        [Op.or]: [
-          { criado_em: { [Op.gte]: dataInicio } },
-          Sequelize.where(
-            Sequelize.literal(
-              "STR_TO_DATE(CONCAT(data, ' ', COALESCE(hora, '00:00:00')), '%Y-%m-%d %H:%i:%s')"
-            ),
-            { [Op.gte]: dataInicioSQL }
-          ),
-        ],
+        criado_em: { [Op.gte]: dataInicio },
       },
       order: [["criado_em", "ASC"]],
       raw: true,
@@ -284,8 +273,8 @@ exports.ultimosPorIntervalo = async (req, res) => {
     console.log(
       `PREVISÕES encontradas no intervalo (${intervalo}):`,
       previsoes.length,
-      `\nData início (JS): ${dataInicio.toISOString()}`,
-      `\nData início (SQL): ${dataInicioSQL}`
+      `\nData início: ${dataInicio.toISOString()}`,
+      `\nData atual: ${agora.toISOString()}`
     );
 
     res.json(previsoes);
