@@ -262,11 +262,16 @@ exports.ultimosPorIntervalo = async (req, res) => {
         dataInicio = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
     }
 
+    const dataInicioStr = dataInicio.toISOString().split("T")[0];
+
     const previsoes = await Previsao.findAll({
       where: {
-        criado_em: { [Op.gte]: dataInicio },
+        [Op.or]: [
+          { criado_em: { [Op.gte]: dataInicio } },
+          { data: { [Op.gte]: dataInicioStr } },
+        ],
       },
-      order: [["criado_em", "ASC"]],
+      order: [["id", "ASC"]],
       raw: true,
     });
 
@@ -274,6 +279,7 @@ exports.ultimosPorIntervalo = async (req, res) => {
       `PREVISÕES encontradas no intervalo (${intervalo}):`,
       previsoes.length,
       `\nData início: ${dataInicio.toISOString()}`,
+      `\nData início (string): ${dataInicioStr}`,
       `\nData atual: ${agora.toISOString()}`
     );
 

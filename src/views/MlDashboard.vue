@@ -86,17 +86,25 @@
 		</section>
 
 		<section class="alerts-area mb-4">
-			<div v-if="comandosOtimizacao?.comandos?.length" class="alert alert-danger shadow-sm d-flex align-items-center gap-3" role="alert">
-				<div class="me-3">
-					<span class="fs-4">🚨</span>
-				</div>
-				<div>
-					<h5 class="mb-1">AÇÃO URGENTE NECESSÁRIA</h5>
-					<p class="mb-0 fw-bold">{{ comandosOtimizacao.comandos[0].acao }} ({{ comandosOtimizacao.comandos[0].prioridade }})</p>
-					<small class="text-muted">{{ comandosOtimizacao.comandos[0].justificativa }}</small>
+			<div v-if="comandosOtimizacao?.comandos?.length" class="alert alert-danger shadow-sm" role="alert">
+				<div class="alert-content">
+					<div class="alert-icon">
+						<span class="fs-3">🚨</span>
+					</div>
+					<div class="alert-body">
+						<h5 class="alert-title mb-2">AÇÃO URGENTE NECESSÁRIA</h5>
+						<p class="alert-action mb-2">{{ comandosOtimizacao.comandos[0].acao }}</p>
+						<span class="alert-priority">{{ comandosOtimizacao.comandos[0].prioridade }}</span>
+						<p class="alert-justification mt-2">{{ comandosOtimizacao.comandos[0].justificativa }}</p>
+					</div>
 				</div>
 			</div>
-			<div v-else-if="comandosOtimizacao?.mensagem && !loading" class="alert alert-success shadow-sm text-center">✅ {{ comandosOtimizacao.mensagem }}</div>
+			<div v-else-if="comandosOtimizacao?.mensagem && !loading" class="alert alert-success shadow-sm">
+				<div class="alert-content-success">
+					<span class="success-icon">✅</span>
+					<span class="success-text">{{ comandosOtimizacao.mensagem }}</span>
+				</div>
+			</div>
 		</section>
 
 		<section v-if="loading" class="loading-state text-center text-muted py-5">
@@ -141,13 +149,13 @@
 						unidade="°C"
 						:descricao="`Média das previsões de temperatura no intervalo de ${intervaloSelecionado}.`"
 					/>
-					<PrevisaoCard 
-						title="Umidade Média" 
-						:real="umidAtual" 
-						prev="" 
-						icon="💧" 
-						unidade="%" 
-						:descricao="`Umidade média no intervalo de ${intervaloSelecionado}.`" 
+					<PrevisaoCard
+						title="Umidade Média"
+						:real="umidAtual"
+						prev=""
+						icon="💧"
+						unidade="%"
+						:descricao="`Umidade média no intervalo de ${intervaloSelecionado}.`"
 					/>
 					<PrevisaoCard
 						title="Acurácia (RMSE)"
@@ -263,28 +271,28 @@ export default {
 			}
 			return this.previsoes[this.previsoes.length - 1];
 		},
-		
+
 		mediaTemperaturaReal() {
 			if (!this.previsoes || this.previsoes.length === 0) return 0;
-			const valores = this.previsoes.filter(p => p.temperatura_real !== null).map(p => parseFloat(p.temperatura_real));
+			const valores = this.previsoes.filter((p) => p.temperatura_real !== null).map((p) => parseFloat(p.temperatura_real));
 			if (valores.length === 0) return 0;
 			return valores.reduce((acc, val) => acc + val, 0) / valores.length;
 		},
-		
+
 		mediaTemperaturaPrevista() {
 			if (!this.previsoes || this.previsoes.length === 0) return 0;
-			const valores = this.previsoes.filter(p => p.temperatura_prevista !== null).map(p => parseFloat(p.temperatura_prevista));
+			const valores = this.previsoes.filter((p) => p.temperatura_prevista !== null).map((p) => parseFloat(p.temperatura_prevista));
 			if (valores.length === 0) return 0;
 			return valores.reduce((acc, val) => acc + val, 0) / valores.length;
 		},
-		
+
 		mediaUmidadeReal() {
 			if (!this.previsoes || this.previsoes.length === 0) return 0;
-			const valores = this.previsoes.filter(p => p.umidade_real !== null).map(p => parseFloat(p.umidade_real));
+			const valores = this.previsoes.filter((p) => p.umidade_real !== null).map((p) => parseFloat(p.umidade_real));
 			if (valores.length === 0) return 0;
 			return valores.reduce((acc, val) => acc + val, 0) / valores.length;
 		},
-		
+
 		tempAtual() {
 			return this.mediaTemperaturaReal.toFixed(1);
 		},
@@ -618,12 +626,121 @@ header h2 {
 
 .alerts-area {
 	max-width: 920px;
-	margin: 0.5rem auto 1.25rem;
+	margin: 2rem auto;
+	padding: 0 1rem;
 }
+
 .alerts-area .alert {
-	border-radius: 12px;
-	padding: 0.9rem 1rem;
+	border-radius: 16px;
+	padding: 0;
 	margin-bottom: 0;
+	border: none;
+	overflow: hidden;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.alert-content {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1.5rem;
+	padding: 1.5rem 2rem;
+	background: #ffe5e8;
+	border: 3px solid #c82333;
+}
+
+.alert-icon {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 70px;
+	height: 70px;
+	background: rgba(255, 255, 255, 0.4);
+	border-radius: 50%;
+	border: 2px solid rgba(200, 35, 51, 0.3);
+}
+
+.alert-body {
+	flex: 1;
+	text-align: center;
+}
+
+.alert-title {
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: #721c24;
+	margin: 0;
+	letter-spacing: 0.5px;
+	text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.alert-action {
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: #721c24;
+	margin: 0;
+}
+
+.alert-priority {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	background: rgba(200, 35, 51, 0.2);
+	border-radius: 20px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: #721c24;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border: 1px solid rgba(114, 28, 36, 0.3);
+}
+
+.alert-justification {
+	font-size: 0.95rem;
+	color: #664d03;
+	margin: 0;
+	line-height: 1.5;
+	font-weight: 500;
+}
+
+.alert-content-success {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	padding: 1.25rem 2rem;
+	background: #e7f5ea;
+	border: 3px solid #28a745;
+}
+
+.success-icon {
+	font-size: 1.75rem;
+	flex-shrink: 0;
+}
+
+.success-text {
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: #155724;
+	text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+	.alert-content {
+		flex-direction: column;
+		text-align: center;
+		padding: 1.25rem 1rem;
+		gap: 1rem;
+	}
+
+	.alert-icon {
+		width: 60px;
+		height: 60px;
+	}
+
+	.alerts-area {
+		margin: 1.5rem auto;
+	}
 }
 
 .content-tabs {
